@@ -67,3 +67,8 @@ reports/
 
 # UV lock file (can be added to git if desired)
 # uv.lock
+
+# Claude Code, Codex, and OMX
+.claude/
+.codex/
+.omx/
