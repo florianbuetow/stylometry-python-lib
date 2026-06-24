@@ -56,6 +56,7 @@ dmypy.json
 
 # Reports
 reports/
+docs/
 
 # macOS
 .DS_Store
