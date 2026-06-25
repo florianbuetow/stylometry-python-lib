@@ -1,0 +1,20 @@
+{
+  "lexicon_id": "modals_en_v1",
+  "family": "modals",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list based on existing deterministic modal coverage",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_token_match",
+  "entries": [
+    {"token": "can", "groups": ["core_modal", "dynamic"]},
+    {"token": "could", "groups": ["core_modal", "dynamic", "epistemic"]},
+    {"token": "may", "groups": ["core_modal", "epistemic", "deontic"]},
+    {"token": "might", "groups": ["core_modal", "epistemic"]},
+    {"token": "must", "groups": ["core_modal", "deontic", "epistemic"]},
+    {"token": "shall", "groups": ["core_modal", "deontic"]},
+    {"token": "should", "groups": ["core_modal", "deontic", "epistemic"]},
+    {"token": "will", "groups": ["core_modal", "dynamic"]},
+    {"token": "would", "groups": ["core_modal", "dynamic", "epistemic"]}
+  ]
+}

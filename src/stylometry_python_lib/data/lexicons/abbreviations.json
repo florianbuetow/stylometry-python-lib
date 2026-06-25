@@ -1,0 +1,25 @@
+{
+  "lexicon_id": "abbreviations_en_v1",
+  "family": "abbreviations",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic abbreviation diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_raw_exact_match_with_boundary_guards",
+  "entries": [
+    {"token": "e.g.", "groups": ["latin", "dotted"]},
+    {"token": "eg", "groups": ["latin", "undotted"]},
+    {"token": "i.e.", "groups": ["latin", "dotted"]},
+    {"token": "ie", "groups": ["latin", "undotted"]},
+    {"token": "etc.", "groups": ["latin", "dotted"]},
+    {"token": "vs.", "groups": ["comparison", "dotted"]},
+    {"token": "mr.", "groups": ["honorific", "dotted"]},
+    {"token": "mrs.", "groups": ["honorific", "dotted"]},
+    {"token": "ms.", "groups": ["honorific", "dotted"]},
+    {"token": "dr.", "groups": ["honorific", "dotted"]},
+    {"token": "prof.", "groups": ["honorific", "dotted"]},
+    {"token": "dept.", "groups": ["institutional", "dotted"]},
+    {"token": "govt.", "groups": ["institutional", "dotted"]},
+    {"token": "no.", "groups": ["numbering", "dotted"]}
+  ]
+}

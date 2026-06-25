@@ -1,0 +1,19 @@
+{
+  "lexicon_id": "frequency_bands_en_seed_v1",
+  "family": "frequency_bands",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed reference list for deterministic lexical sophistication diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_token_match",
+  "entries": [
+    {"token": "the", "band": "high_frequency", "rank": 1, "frequency_per_million": 50000.0},
+    {"token": "and", "band": "high_frequency", "rank": 2, "frequency_per_million": 25000.0},
+    {"token": "people", "band": "mid_frequency", "rank": 500, "frequency_per_million": 450.0},
+    {"token": "science", "band": "mid_frequency", "rank": 900, "frequency_per_million": 240.0},
+    {"token": "beautiful", "band": "low_frequency", "rank": 3500, "frequency_per_million": 35.0},
+    {"token": "analysis", "band": "low_frequency", "rank": 4200, "frequency_per_million": 22.0},
+    {"token": "quiescent", "band": "rare_reference", "rank": 12000, "frequency_per_million": 1.7},
+    {"token": "sesquipedalian", "band": "rare_reference", "rank": 18000, "frequency_per_million": 0.4}
+  ]
+}

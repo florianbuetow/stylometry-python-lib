@@ -1,0 +1,19 @@
+{
+  "lexicon_id": "discourse_markers_en_v1",
+  "family": "discourse_markers",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list based on existing deterministic discourse marker coverage",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_raw_phrase_match_with_boundary_guards",
+  "entries": [
+    {"token": "however", "groups": ["contrast", "concession"]},
+    {"token": "therefore", "groups": ["consequence"]},
+    {"token": "moreover", "groups": ["additive"]},
+    {"token": "nevertheless", "groups": ["contrast", "concession"]},
+    {"token": "anyway", "groups": ["topic_shift"]},
+    {"token": "well", "groups": ["interactional", "topic_shift"]},
+    {"token": "indeed", "groups": ["emphasis"]},
+    {"token": "in fact", "groups": ["emphasis", "clarification"]}
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "lexicon_id": "contractions_en_v1",
+  "family": "contractions",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic contraction diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_orthographic_token_match",
+  "entries": [
+    {
+      "token": "ain't",
+      "groups": ["negation", "colloquial", "ambiguous"],
+      "expansion": ["am", "not"],
+      "expansion_alternatives": [["am", "not"], ["are", "not"], ["is", "not"], ["has", "not"]]
+    },
+    {"token": "can't", "groups": ["negation", "modal"], "expansion": ["can", "not"]},
+    {"token": "couldn't", "groups": ["negation", "modal"], "expansion": ["could", "not"]},
+    {
+      "token": "he's",
+      "groups": ["pronoun_auxiliary", "ambiguous"],
+      "expansion": ["he", "is"],
+      "expansion_alternatives": [["he", "is"], ["he", "has"]]
+    },
+    {"token": "i'm", "groups": ["pronoun_auxiliary"], "expansion": ["i", "am"]},
+    {"token": "i've", "groups": ["pronoun_auxiliary"], "expansion": ["i", "have"]},
+    {"token": "isn't", "groups": ["negation"], "expansion": ["is", "not"]},
+    {
+      "token": "it's",
+      "groups": ["pronoun_auxiliary", "ambiguous"],
+      "expansion": ["it", "is"],
+      "expansion_alternatives": [["it", "is"], ["it", "has"]]
+    },
+    {"token": "let's", "groups": ["colloquial"], "expansion": ["let", "us"]},
+    {
+      "token": "she's",
+      "groups": ["pronoun_auxiliary", "ambiguous"],
+      "expansion": ["she", "is"],
+      "expansion_alternatives": [["she", "is"], ["she", "has"]]
+    },
+    {"token": "shouldn't", "groups": ["negation", "modal"], "expansion": ["should", "not"]},
+    {"token": "they're", "groups": ["pronoun_auxiliary"], "expansion": ["they", "are"]},
+    {"token": "we're", "groups": ["pronoun_auxiliary"], "expansion": ["we", "are"]},
+    {"token": "won't", "groups": ["negation", "modal"], "expansion": ["will", "not"]},
+    {"token": "wouldn't", "groups": ["negation", "modal"], "expansion": ["would", "not"]},
+    {"token": "you're", "groups": ["pronoun_auxiliary"], "expansion": ["you", "are"]}
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "lexicon_id": "spelling_variants_en_v1",
+  "family": "spelling_variants",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic spelling variant diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_token_match_with_exact_case_counts",
+  "pairs": [
+    {
+      "pair_id": "colour_color",
+      "variant_a": {"label": "british", "token": "colour"},
+      "variant_b": {"label": "american", "token": "color"},
+      "groups": ["us_uk", "dialect"]
+    },
+    {
+      "pair_id": "favour_favor",
+      "variant_a": {"label": "british", "token": "favour"},
+      "variant_b": {"label": "american", "token": "favor"},
+      "groups": ["us_uk", "dialect"]
+    },
+    {
+      "pair_id": "realise_realize",
+      "variant_a": {"label": "british", "token": "realise"},
+      "variant_b": {"label": "american", "token": "realize"},
+      "groups": ["us_uk", "dialect"]
+    },
+    {
+      "pair_id": "organise_organize",
+      "variant_a": {"label": "british", "token": "organise"},
+      "variant_b": {"label": "american", "token": "organize"},
+      "groups": ["us_uk", "dialect"]
+    },
+    {
+      "pair_id": "centre_center",
+      "variant_a": {"label": "british", "token": "centre"},
+      "variant_b": {"label": "american", "token": "center"},
+      "groups": ["us_uk", "dialect"]
+    }
+  ]
+}

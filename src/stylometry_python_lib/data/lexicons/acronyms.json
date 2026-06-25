@@ -1,0 +1,20 @@
+{
+  "lexicon_id": "acronyms_en_v1",
+  "family": "acronyms",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic named acronym diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "case_sensitive_raw_exact_match_with_boundary_guards",
+  "entries": [
+    {"token": "NASA", "groups": ["agency"]},
+    {"token": "API", "groups": ["technology"]},
+    {"token": "U.S.A.", "groups": ["geopolitical", "dotted"]},
+    {"token": "ISO", "groups": ["standards", "technology"]},
+    {"token": "FBI", "groups": ["agency"]},
+    {"token": "UN", "groups": ["geopolitical", "organization"]},
+    {"token": "EU", "groups": ["geopolitical", "organization"]},
+    {"token": "HTML", "groups": ["technology", "web"]},
+    {"token": "CSS", "groups": ["technology", "web"]}
+  ]
+}

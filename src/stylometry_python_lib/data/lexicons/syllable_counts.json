@@ -1,0 +1,21 @@
+{
+  "lexicon_id": "syllable_counts_en_v1",
+  "family": "syllable_counts",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic syllable diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_alpha_token_match_with_heuristic_fallback",
+  "entries": [
+    {"token": "people", "syllables": 2},
+    {"token": "queue", "syllables": 1},
+    {"token": "rhythm", "syllables": 2},
+    {"token": "science", "syllables": 2},
+    {"token": "beautiful", "syllables": 3},
+    {"token": "orange", "syllables": 2},
+    {"token": "family", "syllables": 3},
+    {"token": "business", "syllables": 2},
+    {"token": "every", "syllables": 2},
+    {"token": "different", "syllables": 3}
+  ]
+}

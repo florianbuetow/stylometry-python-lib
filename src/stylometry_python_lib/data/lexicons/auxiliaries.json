@@ -1,0 +1,25 @@
+{
+  "lexicon_id": "auxiliaries_en_v1",
+  "family": "auxiliaries",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list based on existing deterministic auxiliary coverage",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_token_match",
+  "entries": [
+    {"token": "am", "groups": ["be"]},
+    {"token": "are", "groups": ["be"]},
+    {"token": "be", "groups": ["be"]},
+    {"token": "been", "groups": ["be"]},
+    {"token": "being", "groups": ["be", "passive_auxiliary"]},
+    {"token": "did", "groups": ["do"]},
+    {"token": "do", "groups": ["do"]},
+    {"token": "does", "groups": ["do"]},
+    {"token": "had", "groups": ["have"]},
+    {"token": "has", "groups": ["have"]},
+    {"token": "have", "groups": ["have"]},
+    {"token": "is", "groups": ["be"]},
+    {"token": "was", "groups": ["be"]},
+    {"token": "were", "groups": ["be"]}
+  ]
+}

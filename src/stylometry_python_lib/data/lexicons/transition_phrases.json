@@ -1,0 +1,17 @@
+{
+  "lexicon_id": "transition_phrases_en_v1",
+  "family": "transition_phrases",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list based on existing deterministic transition phrase coverage",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_raw_phrase_match_with_boundary_guards",
+  "entries": [
+    {"token": "on the other hand", "groups": ["contrast"]},
+    {"token": "in addition", "groups": ["additive"]},
+    {"token": "as a result", "groups": ["consequence"]},
+    {"token": "for example", "groups": ["example"]},
+    {"token": "in conclusion", "groups": ["conclusion"]},
+    {"token": "by contrast", "groups": ["contrast"]}
+  ]
+}
