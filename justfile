@@ -67,8 +67,8 @@ help:
     @printf "\033[0;33mCI & Testing:\033[0m\n"
     @printf "  %-40s %s\n" "test" "Run unit tests only (fast)"
     @printf "  %-40s %s\n" "test-coverage" "Run unit tests with coverage report"
-    @printf "  %-40s %s\n" "ci" "Run ALL validation checks (verbose)"
-    @printf "  %-40s %s\n" "ci-quiet" "Run ALL validation checks silently"
+    @printf "  %-40s %s\n" "ci" "Run ALL validation checks silently"
+    @printf "  %-40s %s\n" "ci-verbose" "Run ALL validation checks (verbose)"
     @echo ""
 
 # Check prerequisites
@@ -247,7 +247,7 @@ test-coverage: init
     @echo ""
 
 # Run ALL validation checks (verbose)
-ci:
+ci-verbose:
     #!/usr/bin/env bash
     set -e
     echo ""
@@ -263,15 +263,15 @@ ci:
     just code-spell
     just code-semgrep
     just code-audit
-    just test
     just code-architecture
     just code-lspchecks
+    just test
     echo ""
     printf "\033[0;32m✓ All CI checks passed\033[0m\n"
     echo ""
 
 # Run ALL validation checks silently (only show output on errors)
-ci-quiet:
+ci:
     #!/usr/bin/env bash
     set -e
     printf "\033[0;34m=== Running CI Checks (Quiet Mode) ===\033[0m\n"
@@ -308,14 +308,14 @@ ci-quiet:
     just code-audit > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Code-audit failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Code-audit passed\033[0m\n"
 
-    just test > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test failed\033[0m\n"; cat $TMPFILE; exit 1; }
-    printf "\033[0;32m✓ Test passed\033[0m\n"
-
     just code-architecture > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Code-architecture failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Code-architecture passed\033[0m\n"
 
     just code-lspchecks > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Code-lspchecks failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Code-lspchecks passed\033[0m\n"
+
+    just test > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test failed\033[0m\n"; cat $TMPFILE; exit 1; }
+    printf "\033[0;32m✓ Test passed\033[0m\n"
 
     echo ""
     printf "\033[0;32m✓ All CI checks passed\033[0m\n"

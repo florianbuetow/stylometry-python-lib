@@ -111,8 +111,8 @@ just
 
 ### CI
 
-- `just ci` - Run all validation checks (verbose)
-- `just ci-quiet` - Run all checks (silent, fail-fast)
+- `just ci` - Run all checks (silent, fail-fast)
+- `just ci-verbose` - Run all validation checks (verbose)
 
 The CI pipeline runs the following steps in order:
 1. `init` - Initialize environment

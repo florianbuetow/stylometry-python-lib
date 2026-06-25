@@ -56,7 +56,14 @@ dmypy.json
 
 # Reports
 reports/
-docs/
+docs/*
+!docs/IMPLEMENTATION-PLAN.md
+!docs/FEATURE-TEST-PLAN.md
+!docs/IMPLEMENTATION-PLAN-v2.md
+!docs/FEATURE-TEST-PLAN-v2.md
+!docs/RESEARCH-QUESTIONS-v2.md
+!docs/RESEARCH-v2/
+!docs/RESEARCH-v2/*.md
 
 # macOS
 .DS_Store

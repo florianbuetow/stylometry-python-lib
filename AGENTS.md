@@ -43,8 +43,8 @@ This file provides guidance to AI agents and AI-assisted development tools when 
 - Use `just init` to set up the project
 - Use `just run` to execute the main program
 - Use `just destroy` to remove the virtual environment
-- Use `just ci` to run all validation checks (verbose)
-- Use `just ci-quiet` to run all validation checks (silent, fail-fast)
+- Use `just ci` to run all validation checks (silent, fail-fast)
+- Use `just ci-verbose` to run all validation checks (verbose)
 
 ## Project Structure
 - All source code lives in `src/`
