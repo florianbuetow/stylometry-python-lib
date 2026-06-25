@@ -66,6 +66,10 @@ docs/*
 !docs/RESEARCH-v2/
 !docs/RESEARCH-v2/*.md
 
+# Local configuration
+config.yaml
+!template-config.yaml
+
 # macOS
 .DS_Store
 .AppleDouble
