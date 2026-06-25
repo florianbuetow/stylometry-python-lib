@@ -19,6 +19,7 @@ build-backend = "hatchling.build"
 packages = ["src/stylometry_python_lib"]
 
 [project.optional-dependencies]
+llm = []
 dev = [
     # Testing
     "pytest>=7.4.0",

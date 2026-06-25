@@ -14,6 +14,12 @@ from sklearn.base import BaseEstimator
 from stylometry_python_lib._fitted import require_fitted
 from stylometry_python_lib._tabular import text_series, validate_output_mode
 from stylometry_python_lib.errors import OptionalDependencyError
+from stylometry_python_lib.llm import LLMClientProtocol
+from stylometry_python_lib.llm_transformers import (
+    ConfiguredLLMAnnotationSidecar,
+    ConfiguredLLMAnnotationTransformer,
+    configured_llm_annotation_transformer,
+)
 from stylometry_python_lib.registry import FeatureRegistry
 from stylometry_python_lib.specs import FeatureSpec, InputLayer, StabilityStatus, TopicDependence
 from stylometry_python_lib.undefined import FeatureDiagnostic, FeatureStatus
@@ -302,6 +308,9 @@ class LLMAnnotationSidecar:
     prompt_version: str
     response_schema: str
     structured_response: tuple[tuple[str, str], ...]
+
+
+type LLMAnnotationSidecarLike = LLMAnnotationSidecar | ConfiguredLLMAnnotationSidecar
 
 
 class ParserBackedTransformer(BaseEstimator):
@@ -3387,6 +3396,9 @@ def parser_dependency_structure_transformer(
 class LLMAnnotationTransformer(BaseEstimator):
     """Placeholder gate for LLM annotation features with required provenance fields."""
 
+    configured_transformer_: ConfiguredLLMAnnotationTransformer
+    last_sidecars_: tuple[LLMAnnotationSidecarLike, ...]
+
     def __init__(
         self,
         provider: str,
@@ -3396,6 +3408,8 @@ class LLMAnnotationTransformer(BaseEstimator):
         response_schema: str,
         feature_names: tuple[str, ...],
         fake_annotations: tuple[FakeLLMAnnotation, ...] | None,
+        client: LLMClientProtocol | None,
+        text_column: str,
     ) -> None:
         self.provider = provider
         self.model = model
@@ -3404,12 +3418,27 @@ class LLMAnnotationTransformer(BaseEstimator):
         self.response_schema = response_schema
         self.feature_names = feature_names
         self.fake_annotations = fake_annotations
+        self.client = client
+        self.text_column = text_column
 
     def fit(self, x: object, y: object) -> Self:
-        """Fit fake LLM annotation metadata or fail for unavailable providers."""
+        """Fit fake or configured LLM annotation metadata."""
         del y
         if not self._uses_fake_provider():
-            raise self._dependency_error()
+            if self.client is None:
+                raise self._dependency_error()
+            configured = configured_llm_annotation_transformer(
+                client=self.client,
+                text_column=self.text_column,
+                feature_names=self.feature_names,
+            ).fit(x, None)
+            registry = FeatureRegistry(specs=self.feature_specs())
+            registry.require_complete()
+            self.feature_names_out_ = configured.get_feature_names_out(None)
+            self.n_features_in_ = configured.n_features_in_
+            self.registry_ = registry
+            self.configured_transformer_ = configured
+            return self
         row_ids = _llm_row_ids(x)
         annotation_map = _fake_llm_annotation_map(self.fake_annotations)
         expected_names = set(self.feature_names)
@@ -3429,9 +3458,15 @@ class LLMAnnotationTransformer(BaseEstimator):
         return self
 
     def transform(self, x: object) -> np.ndarray:
-        """Return fake-provider LLM annotation values or fail for unavailable providers."""
+        """Return fake or configured-provider LLM annotation values."""
         if not self._uses_fake_provider():
-            raise self._dependency_error()
+            if self.client is None:
+                raise self._dependency_error()
+            require_fitted(self, "configured_transformer_")
+            result = self.configured_transformer_.transform(x)
+            self.last_sidecars_ = self.configured_transformer_.last_sidecars_
+            self.last_diagnostics_ = self.configured_transformer_.last_diagnostics_
+            return result
         require_fitted(self, "feature_names_out_")
         row_ids = _llm_row_ids(x)
         rows: list[list[float]] = []
@@ -3455,7 +3490,7 @@ class LLMAnnotationTransformer(BaseEstimator):
         return np.asarray(rows, dtype=np.float64)
 
     def fit_transform(self, x: object, y: object) -> np.ndarray:
-        """Fit, then transform with fake LLM annotations."""
+        """Fit, then transform with fake or configured LLM annotations."""
         return self.fit(x, y).transform(x)
 
     def get_feature_names_out(self, input_features: object) -> np.ndarray:
@@ -3490,7 +3525,7 @@ class LLMAnnotationTransformer(BaseEstimator):
 
     def _dependency_error(self) -> OptionalDependencyError:
         return OptionalDependencyError(
-            "LLM annotation features require an installed provider extra; "
+            "LLM annotation features require an explicit configured LLM client; "
             f"provider={self.provider}, model={self.model}, version={self.version}, prompt_version={self.prompt_version}"
         )
 
@@ -3568,7 +3603,10 @@ def llm_annotation_transformer(
     version: str,
     prompt_version: str,
     response_schema: str,
+    feature_names: tuple[str, ...],
     fake_annotations: tuple[FakeLLMAnnotation, ...] | None,
+    client: LLMClientProtocol | None,
+    text_column: str,
 ) -> LLMAnnotationTransformer:
     """Build an LLM annotation transformer gate for the built-in LLM feature catalog."""
     return LLMAnnotationTransformer(
@@ -3577,6 +3615,8 @@ def llm_annotation_transformer(
         version=version,
         prompt_version=prompt_version,
         response_schema=response_schema,
-        feature_names=llm_annotation_feature_names(),
+        feature_names=feature_names,
         fake_annotations=fake_annotations,
+        client=client,
+        text_column=text_column,
     )

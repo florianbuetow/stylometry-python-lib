@@ -46,7 +46,10 @@ def test_fake_llm_annotation_provider_has_golden_values_sidecars_and_metadata() 
         version="1",
         prompt_version="prompt-v1",
         response_schema="style_annotation_schema_v1",
+        feature_names=llm_annotation_feature_names(),
         fake_annotations=_fake_annotations(),
+        client=None,
+        text_column="text",
     )
 
     result = transformer.fit_transform(x, None)
@@ -80,7 +83,10 @@ def test_fake_llm_annotation_provider_supports_serialization_and_no_input_mutati
         version="1",
         prompt_version="prompt-v1",
         response_schema="style_annotation_schema_v1",
+        feature_names=llm_annotation_feature_names(),
         fake_annotations=_fake_annotations(),
+        client=None,
+        text_column="text",
     )
 
     result = transformer.fit_transform(x, None)
@@ -100,7 +106,10 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
         version="1",
         prompt_version="prompt-v1",
         response_schema="style_annotation_schema_v1",
+        feature_names=llm_annotation_feature_names(),
         fake_annotations=_fake_annotations(),
+        client=None,
+        text_column="text",
     )
 
     with pytest.raises(NotFittedError):
@@ -112,7 +121,10 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
             version="1",
             prompt_version="prompt-v1",
             response_schema="style_annotation_schema_v1",
+            feature_names=llm_annotation_feature_names(),
             fake_annotations=_fake_annotations()[:1],
+            client=None,
+            text_column="text",
         ).fit(x, None)
     with pytest.raises(ValueError, match="Fake LLM annotation document id has no input row"):
         llm_annotation_transformer(
@@ -121,6 +133,7 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
             version="1",
             prompt_version="prompt-v1",
             response_schema="style_annotation_schema_v1",
+            feature_names=llm_annotation_feature_names(),
             fake_annotations=(
                 *_fake_annotations(),
                 FakeLLMAnnotation(
@@ -129,6 +142,8 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
                     structured_response=(("tone", "extra"),),
                 ),
             ),
+            client=None,
+            text_column="text",
         ).fit(x, None)
     with pytest.raises(ValueError, match="Fake LLM annotation missing feature value"):
         llm_annotation_transformer(
@@ -137,6 +152,7 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
             version="1",
             prompt_version="prompt-v1",
             response_schema="style_annotation_schema_v1",
+            feature_names=llm_annotation_feature_names(),
             fake_annotations=(
                 FakeLLMAnnotation(
                     document_id="doc-a",
@@ -145,6 +161,8 @@ def test_fake_llm_annotation_provider_validates_fixture_contract_and_fit_state()
                 ),
                 _fake_annotations()[1],
             ),
+            client=None,
+            text_column="text",
         ).fit(x, None)
     with pytest.raises(ValueError, match="Fake LLM annotations require pandas input"):
         not_fitted.fit(np.asarray([[1.0], [2.0]]), None)

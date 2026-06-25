@@ -189,12 +189,12 @@ EXPECTED_LLM_FEATURE_NAMES = (
     "text::llm::rhetorical_structure",
     "text::llm::argumentation_style",
     "text::llm::cohesion_judgment",
-    "text::llm::pairwise_style_comparison",
     "text::llm::style_topic_separation",
     "text::llm::stylistic_similarity",
+    "text::llm::pairwise_style_comparison",
     "text::llm::style_difference_explanation",
-    "text::llm::authorial_habit_summary",
     "text::llm::style_transfer_descriptor",
+    "text::llm::authorial_habit_summary",
     "text::llm::prompt_derived_vector",
     "text::llm::embedding",
     "text::llm::style_tuned_embedding",
@@ -446,7 +446,10 @@ def test_llm_catalog_and_fail_fast_extraction_behavior_are_exhaustive() -> None:
         version="2026-01-01",
         prompt_version="stylometry-v1",
         response_schema="style_annotation_schema_v1",
+        feature_names=llm_annotation_feature_names(),
         fake_annotations=None,
+        client=None,
+        text_column="text",
     )
     specs = llm.feature_specs()
 
@@ -460,6 +463,13 @@ def test_llm_catalog_and_fail_fast_extraction_behavior_are_exhaustive() -> None:
         assert "version=2026-01-01" in spec.provenance
         assert "prompt_version=stylometry-v1" in spec.provenance
         assert "response_schema=style_annotation_schema_v1" in spec.formula_or_rule
+    registry = built_in_research_registry()
+    llm_entries = tuple(entry for entry in registry.entries if entry.bucket == ResearchBucket.LLM)
+    assert len(llm_entries) == 20
+    for entry in llm_entries:
+        assert "configured OpenAI-compatible/LM Studio provider" in entry.dependency_extra
+        assert "configured LM Studio row/pair" in entry.test_status
+        assert "stylometry_python_lib.llm" in entry.implementation_owner
     with pytest.raises(OptionalDependencyError, match=r"provider=openai.*model=gpt-style-judge.*prompt_version=stylometry-v1"):
         llm.fit(x, None)
     with pytest.raises(OptionalDependencyError, match=r"provider=openai.*model=gpt-style-judge.*prompt_version=stylometry-v1"):

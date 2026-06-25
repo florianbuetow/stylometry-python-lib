@@ -2301,7 +2301,7 @@ requires-dist = [
     { name = "scipy", specifier = ">=1.17.1" },
     { name = "semgrep", marker = "extra == 'dev'", specifier = ">=1.144.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["llm", "dev"]
 
 [package.metadata.requires-dev]
 dev = [

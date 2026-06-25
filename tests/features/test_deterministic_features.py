@@ -23,6 +23,7 @@ from stylometry_python_lib import (
     english_preprocessing_config,
     function_word_frequency_transformer,
     letter_frequency_transformer,
+    llm_annotation_feature_names,
     llm_annotation_transformer,
     parser_backed_transformer,
 )
@@ -350,7 +351,10 @@ def test_optional_parser_and_llm_features_fail_fast_with_metadata() -> None:
         version="1",
         prompt_version="v1",
         response_schema="tone_schema",
+        feature_names=llm_annotation_feature_names(),
         fake_annotations=None,
+        client=None,
+        text_column="text",
     )
 
     parser_names = {spec.name for spec in parser.feature_specs()}
