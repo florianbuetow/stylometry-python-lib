@@ -58,6 +58,12 @@ evaluation-shap = [
 evaluation-plotting = [
     "umap-learn>=0.5",
 ]
+parser-spacy = [
+    "spacy>=3.7",
+]
+parser-stanza = [
+    "stanza>=1.8",
+]
 
 [tool.ruff]
 line-length = 140
@@ -144,7 +150,7 @@ check_untyped_defs = false
 # Optional third-party deps without upstream type stubs. Pyright consumes the
 # local stubs/ packages (stubPath); mypy treats these modules as untyped.
 [[tool.mypy.overrides]]
-module = ["statsmodels.*", "shap.*", "umap.*"]
+module = ["statsmodels.*", "shap.*", "umap.*", "stanza.*"]
 ignore_missing_imports = true
 
 [tool.coverage.run]
