@@ -267,6 +267,9 @@ from stylometry_python_lib.llm_transformers import (
     configured_llm_vector_feature_names,
     llm_vector_transformer,
 )
+from stylometry_python_lib.parser_pipeline import ParserCache, parse_with_cache
+from stylometry_python_lib.parser_spacy import SpacyParserAdapter, spacy_parser_adapter
+from stylometry_python_lib.parser_stanza import StanzaParserAdapter, stanza_parser_adapter
 from stylometry_python_lib.registry import AvailabilityCounts, FeatureRegistry, ResearchFeatureRegistry, built_in_research_registry
 from stylometry_python_lib.sklearn import FeatureBlockSidecars, FeatureExtractor
 from stylometry_python_lib.specs import (
@@ -526,6 +529,12 @@ __all__ = [
     "FeatureOutputMode",
     "TopicDependence",
     "built_in_research_registry",
+    "SpacyParserAdapter",
+    "spacy_parser_adapter",
+    "StanzaParserAdapter",
+    "stanza_parser_adapter",
+    "ParserCache",
+    "parse_with_cache",
     "AnnotationLayerMetadata",
     "FrequencyBandEntry",
     "LexiconEntry",
