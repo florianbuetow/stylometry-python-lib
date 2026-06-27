@@ -12,6 +12,7 @@ from stylometry_python_lib.evaluation.importance import (
     FeatureImportanceRecord,
     FeatureImportanceReport,
     permutation_importance_report,
+    shap_importance_report,
 )
 from stylometry_python_lib.evaluation.report import EvaluationReport, SplitDiagnostics, style_evaluation_report
 from stylometry_python_lib.evaluation.review import HumanReviewItem, HumanReviewPacket, human_review_packet
@@ -19,6 +20,7 @@ from stylometry_python_lib.evaluation.topic import (
     TopicModelReport,
     TopicPredictionControl,
     TopicPredictionReport,
+    TwoWayAnovaReport,
     ablation_scores,
     content_mask_text,
     cross_topic_holdout_indices,
@@ -28,6 +30,7 @@ from stylometry_python_lib.evaluation.topic import (
     topic_model_report,
     topic_prediction_control_report,
     topic_prediction_leakage_score,
+    two_way_anova_report,
     two_way_effect_sizes,
 )
 from stylometry_python_lib.evaluation.transform import PCAReducer, ZScoreStandardizer
@@ -38,6 +41,7 @@ from stylometry_python_lib.evaluation.verification import (
     one_class_verification,
     thresholded_distance_verification,
 )
+from stylometry_python_lib.evaluation.visualization import tsne_embedding, umap_embedding
 
 __all__ = [
     "ClassifierReport",
@@ -65,6 +69,7 @@ __all__ = [
     "euclidean_distance_matrix",
     "length_sensitivity",
     "permutation_importance_report",
+    "shap_importance_report",
     "human_review_packet",
     "evaluation_report_to_json",
     "human_review_packet_to_json",
@@ -75,9 +80,13 @@ __all__ = [
     "thresholded_distance_verification",
     "one_class_verification",
     "calibrated_binary_verification",
+    "tsne_embedding",
+    "umap_embedding",
     "topic_prediction_control_report",
     "TopicModelReport",
     "topic_model_report",
+    "TwoWayAnovaReport",
+    "two_way_anova_report",
     "topic_prediction_leakage_score",
     "two_way_effect_sizes",
 ]

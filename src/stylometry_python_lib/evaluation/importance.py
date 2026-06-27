@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
 
+from stylometry_python_lib.errors import OptionalDependencyError
 from stylometry_python_lib.evaluation.distances import as_float_matrix
 
 
@@ -16,6 +17,14 @@ class ScoringEstimatorProtocol(Protocol):
 
     def score(self, x: object, y: object) -> float:
         """Return a scalar score for matrix and labels."""
+        ...
+
+
+class ProbabilityEstimatorProtocol(Protocol):
+    """Fitted-estimator protocol exposing class probabilities for SHAP."""
+
+    def predict_proba(self, x: NDArray[np.float64], /) -> NDArray[Any]:
+        """Return class-probability estimates for a feature matrix."""
         ...
 
 
@@ -138,3 +147,24 @@ def _validate_feature_names(feature_names: object, feature_count: int) -> tuple[
 def _validate_importance_config(n_repeats: int) -> None:
     if n_repeats <= 0:
         raise ValueError("n_repeats must be positive")
+
+
+def shap_importance_report(estimator: ProbabilityEstimatorProtocol, features: object, feature_names: object) -> FeatureImportanceReport:
+    """Compute mean absolute SHAP importances. Requires the evaluation-shap extra (shap)."""
+    try:
+        import shap
+    except ImportError as exc:
+        raise OptionalDependencyError("SHAP feature importance requires the 'evaluation-shap' extra (shap)") from exc
+
+    matrix = as_float_matrix(features)
+    _validate_importance_matrix(matrix)
+    names = _validate_feature_names(feature_names, matrix.shape[1])
+    explainer = shap.Explainer(estimator.predict_proba, matrix)
+    values = np.asarray(explainer(matrix).values, dtype=np.float64)
+    reduce_axes = tuple(axis for axis in range(values.ndim) if axis != 1)
+    mean_abs = np.atleast_1d(np.mean(np.abs(values), axis=reduce_axes))
+    records = tuple(
+        FeatureImportanceRecord(feature_name=name, mean_importance=float(value), std_importance=0.0, repeat_importances=(float(value),))
+        for name, value in zip(names, mean_abs.tolist(), strict=True)
+    )
+    return FeatureImportanceReport(baseline_score=float("nan"), n_repeats=1, random_state=0, records=records)

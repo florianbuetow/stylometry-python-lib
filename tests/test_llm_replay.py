@@ -2,6 +2,7 @@
 
 import math
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -22,10 +23,14 @@ from stylometry_python_lib.llm_transformers import (
 )
 
 
+def _stub_calls() -> list[LLMRequest]:
+    return []
+
+
 @dataclass
 class _StubClient:
     response: LLMResponse
-    calls: list[LLMRequest] = field(default_factory=list)
+    calls: list[LLMRequest] = field(default_factory=_stub_calls)
 
     def complete(self, request: LLMRequest) -> LLMResponse:
         self.calls.append(request)
@@ -52,7 +57,7 @@ def test_record_key_is_stable_and_order_sensitive() -> None:
     assert len(first) == 64  # sha256 hexdigest
 
 
-def test_cassette_round_trips_through_disk(tmp_path) -> None:
+def test_cassette_round_trips_through_disk(tmp_path: Path) -> None:
     response = LLMResponse(
         content='{"tone": 0.5}',
         raw_response={"id": "x"},

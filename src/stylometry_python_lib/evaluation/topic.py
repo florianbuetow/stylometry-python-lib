@@ -16,6 +16,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from stylometry_python_lib._fitted import require_fitted
+from stylometry_python_lib.errors import OptionalDependencyError
 from stylometry_python_lib.evaluation.distances import as_float_matrix
 
 
@@ -364,4 +365,54 @@ def topic_model_report(
         document_topic_matrix=document_topic_matrix,
         top_terms_by_topic=top,
         perplexity=perplexity,
+    )
+
+
+@dataclass(frozen=True)
+class TwoWayAnovaReport:
+    """Full two-way ANOVA with F statistics, p-values, and interaction effects."""
+
+    author_f: float
+    topic_f: float
+    interaction_f: float
+    author_p_value: float
+    topic_p_value: float
+    interaction_p_value: float
+    residual_df: float
+
+
+def two_way_anova_report(values: Sequence[float], authors: Sequence[str], topics: Sequence[str]) -> TwoWayAnovaReport:
+    """Compute a full two-way ANOVA with p-values and interaction.
+
+    Requires the evaluation-stats extra (statsmodels).
+    """
+    if not (len(values) == len(authors) == len(topics)):
+        raise ValueError("values, authors, and topics must have equal length")
+    if len(values) == 0:
+        raise ValueError("two-way ANOVA requires at least one observation")
+    try:
+        import pandas as pd
+        import statsmodels.api as sm
+        from statsmodels.formula.api import ols
+    except ImportError as exc:
+        raise OptionalDependencyError("Full two-way ANOVA requires the 'evaluation-stats' extra (statsmodels)") from exc
+
+    frame = pd.DataFrame({"value": [float(value) for value in values], "author": list(authors), "topic": list(topics)})
+    model = ols("value ~ C(author) + C(topic) + C(author):C(topic)", data=frame).fit()
+    table = sm.stats.anova_lm(model, typ=2)
+    row_labels = [str(label) for label in table.index.tolist()]
+    f_column = np.asarray(table["F"], dtype=np.float64)
+    p_column = np.asarray(table["PR(>F)"], dtype=np.float64)
+    df_column = np.asarray(table["df"], dtype=np.float64)
+    f_by_term = dict(zip(row_labels, f_column.tolist(), strict=True))
+    p_by_term = dict(zip(row_labels, p_column.tolist(), strict=True))
+    df_by_term = dict(zip(row_labels, df_column.tolist(), strict=True))
+    return TwoWayAnovaReport(
+        author_f=float(f_by_term["C(author)"]),
+        topic_f=float(f_by_term["C(topic)"]),
+        interaction_f=float(f_by_term["C(author):C(topic)"]),
+        author_p_value=float(p_by_term["C(author)"]),
+        topic_p_value=float(p_by_term["C(topic)"]),
+        interaction_p_value=float(p_by_term["C(author):C(topic)"]),
+        residual_df=float(df_by_term["Residual"]),
     )

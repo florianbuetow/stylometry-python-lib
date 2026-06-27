@@ -1,0 +1,6 @@
+import numpy as np
+from numpy.typing import NDArray
+
+class UMAP:
+    def __init__(self, *, n_components: int = ..., random_state: int = ...) -> None: ...
+    def fit_transform(self, x: NDArray[np.float64]) -> NDArray[np.float64]: ...

@@ -49,6 +49,15 @@ dev = [
     # Git Hooks
     "pre-commit>=3.6.0",
 ]
+evaluation-stats = [
+    "statsmodels>=0.14",
+]
+evaluation-shap = [
+    "shap>=0.44",
+]
+evaluation-plotting = [
+    "umap-learn>=0.5",
+]
 
 [tool.ruff]
 line-length = 140
@@ -131,6 +140,12 @@ exclude = [".venv/"]
 module = ["tests.*"]
 disallow_untyped_defs = false
 check_untyped_defs = false
+
+# Optional third-party deps without upstream type stubs. Pyright consumes the
+# local stubs/ packages (stubPath); mypy treats these modules as untyped.
+[[tool.mypy.overrides]]
+module = ["statsmodels.*", "shap.*", "umap.*"]
+ignore_missing_imports = true
 
 [tool.coverage.run]
 source = ["src"]
