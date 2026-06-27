@@ -101,6 +101,33 @@ class SyllableCountEntry:
 
 
 @dataclass(frozen=True)
+class PronunciationEntry:
+    """One dictionary pronunciation entry."""
+
+    token: str
+    phonemes: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class VersionedPronunciationResource:
+    """Project-owned pronunciations with required provenance metadata."""
+
+    name: str
+    lexicon_id: str
+    family: str
+    language: str
+    version: str
+    source: str
+    license_note: str
+    normalization: str
+    entries: tuple[PronunciationEntry, ...]
+
+    def phonemes_by_token(self) -> dict[str, tuple[str, ...]]:
+        """Return phoneme sequences keyed by normalized token."""
+        return {entry.token: entry.phonemes for entry in self.entries}
+
+
+@dataclass(frozen=True)
 class VersionedSyllableDictionary:
     """Project-owned syllable counts with required provenance metadata."""
 
@@ -203,6 +230,19 @@ def load_syllable_dictionary(name: str) -> VersionedSyllableDictionary:
     if not isinstance(payload, dict):
         raise ValueError(f"Syllable dictionary resource {name} must contain a JSON object")
     return _parse_syllable_dictionary(name, cast(dict[str, Any], payload))
+
+
+def load_pronunciations(name: str) -> VersionedPronunciationResource:
+    """Load and validate one built-in pronunciation dictionary by name."""
+    if not _is_valid_resource_name(name):
+        raise ValueError(f"Invalid pronunciation resource name: {name}")
+    resource = resources.files("stylometry_python_lib").joinpath("data", "lexicons", f"{name}.json")
+    if not resource.is_file():
+        raise FileNotFoundError(f"Missing pronunciation resource: {name}")
+    payload = json.loads(resource.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Pronunciation resource {name} must contain a JSON object")
+    return _parse_pronunciations(name, cast(dict[str, Any], payload))
 
 
 def load_frequency_bands(name: str) -> VersionedFrequencyBandResource:
@@ -388,6 +428,54 @@ def _parse_spelling_form(name: str, pair_id: str, pair: dict[str, Any], field_na
         label=_required_string(form, "label", name),
         token=_required_string(form, "token", name),
     )
+
+
+def _parse_pronunciations(name: str, payload: dict[str, Any]) -> VersionedPronunciationResource:
+    required_metadata = ("lexicon_id", "family", "language", "version", "source", "license_note", "normalization")
+    metadata = {field_name: _required_string(payload, field_name, name) for field_name in required_metadata}
+    raw_entries = payload.get("entries")
+    if not isinstance(raw_entries, list):
+        raise ValueError(f"Pronunciation resource {name} requires a non-empty entries list")
+    entries_payload = cast(list[object], raw_entries)
+    if len(entries_payload) == 0:
+        raise ValueError(f"Pronunciation resource {name} requires a non-empty entries list")
+    entries = tuple(_parse_pronunciation_entry(name, raw_entry) for raw_entry in entries_payload)
+    _validate_unique_pronunciation_tokens(name, entries)
+    return VersionedPronunciationResource(
+        name=name,
+        lexicon_id=metadata["lexicon_id"],
+        family=metadata["family"],
+        language=metadata["language"],
+        version=metadata["version"],
+        source=metadata["source"],
+        license_note=metadata["license_note"],
+        normalization=metadata["normalization"],
+        entries=entries,
+    )
+
+
+def _parse_pronunciation_entry(name: str, raw_entry: object) -> PronunciationEntry:
+    if not isinstance(raw_entry, dict):
+        raise ValueError(f"Pronunciation resource {name} has a non-object entry")
+    entry = cast(dict[str, Any], raw_entry)
+    token = _required_string(entry, "token", name)
+    if "phonemes" not in entry:
+        raise ValueError(f"Pronunciation resource {name} entry {token} requires a non-empty phonemes list")
+    raw_phonemes = entry["phonemes"]
+    if not isinstance(raw_phonemes, list):
+        raise ValueError(f"Pronunciation resource {name} entry {token} requires a phonemes list")
+    phonemes = tuple(_string_sequence(cast(list[object], raw_phonemes), f"{name}:{token}:phonemes"))
+    if len(phonemes) == 0:
+        raise ValueError(f"Pronunciation resource {name} entry {token} requires a non-empty phonemes list")
+    return PronunciationEntry(token=token, phonemes=phonemes)
+
+
+def _validate_unique_pronunciation_tokens(name: str, entries: tuple[PronunciationEntry, ...]) -> None:
+    seen: set[str] = set()
+    for entry in entries:
+        if entry.token in seen:
+            raise ValueError(f"Pronunciation resource {name} has duplicate token: {entry.token}")
+        seen.add(entry.token)
 
 
 def _parse_syllable_entry(name: str, raw_entry: object) -> SyllableCountEntry:

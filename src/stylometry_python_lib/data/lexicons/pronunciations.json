@@ -1,0 +1,19 @@
+{
+  "lexicon_id": "pronunciations_en_v1",
+  "family": "pronunciations",
+  "language": "en",
+  "version": "1.0.0",
+  "source": "project-maintained seed list for deterministic pronunciation diagnostics",
+  "license_note": "Project data; no third-party restricted source embedded",
+  "normalization": "lowercase_alpha_token_match",
+  "entries": [
+    {"token": "people", "phonemes": ["P", "IY", "P", "AH", "L"]},
+    {"token": "rhythm", "phonemes": ["R", "IH", "DH", "AH", "M"]},
+    {"token": "science", "phonemes": ["S", "AY", "AH", "N", "S"]},
+    {"token": "orange", "phonemes": ["AO", "R", "AH", "N", "JH"]},
+    {"token": "family", "phonemes": ["F", "AE", "M", "AH", "L", "IY"]},
+    {"token": "business", "phonemes": ["B", "IH", "Z", "N", "AH", "S"]},
+    {"token": "different", "phonemes": ["D", "IH", "F", "R", "AH", "N", "T"]},
+    {"token": "beautiful", "phonemes": ["B", "Y", "UW", "T", "AH", "F", "AH", "L"]}
+  ]
+}

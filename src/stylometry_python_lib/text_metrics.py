@@ -7,7 +7,12 @@ from dataclasses import dataclass
 from enum import StrEnum
 from functools import lru_cache
 
-from stylometry_python_lib.lexicons import VersionedSyllableDictionary, load_syllable_dictionary
+from stylometry_python_lib.lexicons import (
+    VersionedPronunciationResource,
+    VersionedSyllableDictionary,
+    load_pronunciations,
+    load_syllable_dictionary,
+)
 
 
 class SyllableCountSource(StrEnum):
@@ -66,3 +71,29 @@ def _heuristic_syllable_count(cleaned: str) -> int:
 @lru_cache(maxsize=1)
 def _default_syllable_dictionary() -> VersionedSyllableDictionary:
     return load_syllable_dictionary("syllable_counts")
+
+
+@dataclass(frozen=True)
+class PronunciationRecord:
+    """An optional pronunciation sidecar with source metadata."""
+
+    raw: str
+    normalized: str
+    phonemes: tuple[str, ...]
+    source: str
+
+
+@lru_cache(maxsize=1)
+def _default_pronunciation_resource() -> VersionedPronunciationResource:
+    return load_pronunciations("pronunciations")
+
+
+def pronunciation_result(word: str) -> PronunciationRecord:
+    """Return a deterministic pronunciation sidecar; absent tokens report empty phonemes."""
+    cleaned = _normalize_syllable_token(word)
+    if cleaned == "":
+        return PronunciationRecord(raw=word, normalized=cleaned, phonemes=(), source="non_word")
+    phonemes_by_token = _default_pronunciation_resource().phonemes_by_token()
+    if cleaned in phonemes_by_token:
+        return PronunciationRecord(raw=word, normalized=cleaned, phonemes=phonemes_by_token[cleaned], source="dictionary")
+    return PronunciationRecord(raw=word, normalized=cleaned, phonemes=(), source="absent")

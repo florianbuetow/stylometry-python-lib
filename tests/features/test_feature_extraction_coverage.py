@@ -248,7 +248,7 @@ def test_research_registry_covers_every_v2_research_row_and_reports_separate_cou
     assert availability.planned_research_families == 90
     assert availability.implemented_feature_blocks == 90
     assert availability.emitted_numeric_columns == 1509
-    assert availability.sidecar_annotation_types == 55
+    assert availability.sidecar_annotation_types == 56
     assert availability.catalog_only_unavailable_entries == 0
     assert availability.out_of_scope_entries == 0
     assert len(matrix) == 90

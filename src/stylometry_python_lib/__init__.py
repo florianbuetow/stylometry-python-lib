@@ -183,15 +183,18 @@ from stylometry_python_lib.features import (
 from stylometry_python_lib.lexicons import (
     FrequencyBandEntry,
     LexiconEntry,
+    PronunciationEntry,
     SpellingVariantForm,
     SpellingVariantPair,
     SyllableCountEntry,
     VersionedFrequencyBandResource,
     VersionedLexicon,
+    VersionedPronunciationResource,
     VersionedSpellingVariantResource,
     VersionedSyllableDictionary,
     load_frequency_bands,
     load_lexicon,
+    load_pronunciations,
     load_spelling_variants,
     load_syllable_dictionary,
 )
@@ -274,7 +277,14 @@ from stylometry_python_lib.specs import (
     ResearchFeatureEntry,
     TopicDependence,
 )
-from stylometry_python_lib.text_metrics import SyllableCountResult, SyllableCountSource, syllable_count, syllable_count_result
+from stylometry_python_lib.text_metrics import (
+    PronunciationRecord,
+    SyllableCountResult,
+    SyllableCountSource,
+    pronunciation_result,
+    syllable_count,
+    syllable_count_result,
+)
 from stylometry_python_lib.undefined import FeatureDiagnostic, FeatureStatus, FeatureValue
 
 __all__ = [
@@ -525,6 +535,11 @@ __all__ = [
     "VersionedFrequencyBandResource",
     "VersionedLexicon",
     "VersionedSyllableDictionary",
+    "PronunciationEntry",
+    "VersionedPronunciationResource",
+    "load_pronunciations",
+    "PronunciationRecord",
+    "pronunciation_result",
     "VersionedSpellingVariantResource",
     "load_frequency_bands",
     "load_lexicon",

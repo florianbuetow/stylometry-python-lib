@@ -81,3 +81,20 @@ def test_syllable_distribution_uses_dictionary_counts_and_heuristic_fallback() -
     assert "syllable_dictionary=syllable_counts_en_v1" in spec.provenance
     assert "syllable_fallback=heuristic_v1" in spec.provenance
     assert "syllable_dictionary=syllable_counts_en_v1" in paragraph_spec.provenance
+
+
+def test_pronunciation_sidecar_reports_phonemes_or_absent() -> None:
+    from stylometry_python_lib.text_metrics import PronunciationRecord, pronunciation_result
+
+    known = pronunciation_result("rhythm")
+    assert isinstance(known, PronunciationRecord)
+    assert known.source == "dictionary"
+    assert known.phonemes == ("R", "IH", "DH", "AH", "M")
+
+    unknown = pronunciation_result("zzqx")
+    assert unknown.source == "absent"
+    assert unknown.phonemes == ()
+
+    non_word = pronunciation_result("123")
+    assert non_word.source == "non_word"
+    assert non_word.phonemes == ()
