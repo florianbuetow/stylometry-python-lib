@@ -171,11 +171,9 @@ def test_orthography_profile_supports_output_modes_serialization_and_no_mutation
 
 
 def test_expanded_script_inventory_counts_new_scripts() -> None:
-    from stylometry_python_lib.features.orthography import _unicode_scripts
-
-    script_ids = {script.script_id for script in _unicode_scripts()}
+    names = orthography_profile_feature_names()
     for expected in ("armenian", "georgian", "bengali", "tamil", "ethiopic"):
-        assert expected in script_ids
+        assert f"text::orthography_profile::script={expected}::count" in names
 
     config = english_preprocessing_config()
     x = pd.DataFrame({"text": ["aԱb"]}, index=["arm"])  # U+0531 ARMENIAN CAPITAL LETTER AYB
