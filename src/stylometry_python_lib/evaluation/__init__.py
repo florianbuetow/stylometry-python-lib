@@ -27,6 +27,8 @@ from stylometry_python_lib.evaluation.transform import PCAReducer, ZScoreStandar
 from stylometry_python_lib.evaluation.verification import (
     VerificationDecision,
     VerificationReport,
+    calibrated_binary_verification,
+    one_class_verification,
     thresholded_distance_verification,
 )
 
@@ -61,6 +63,8 @@ __all__ = [
     "same_topic_hard_negative_pairs",
     "style_evaluation_report",
     "thresholded_distance_verification",
+    "one_class_verification",
+    "calibrated_binary_verification",
     "topic_prediction_control_report",
     "topic_prediction_leakage_score",
     "two_way_effect_sizes",
