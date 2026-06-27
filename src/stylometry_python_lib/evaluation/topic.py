@@ -11,6 +11,7 @@ from typing import Self
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
+from sklearn.decomposition import NMF, LatentDirichletAllocation
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
@@ -310,3 +311,57 @@ def _group_sum_squares(values: NDArray[np.float64], labels: Sequence[str], grand
         group_mean = float(np.mean(np.asarray(grouped_values, dtype=np.float64)))
         total += float(len(grouped_values)) * ((group_mean - grand_mean) ** 2.0)
     return total
+
+
+@dataclass(frozen=True)
+class TopicModelReport:
+    """Topic-model decomposition with per-document topic loadings and top terms."""
+
+    method: str
+    n_topics: int
+    document_topic_matrix: tuple[tuple[float, ...], ...]
+    top_terms_by_topic: tuple[tuple[str, ...], ...]
+    perplexity: float
+
+
+def topic_model_report(
+    counts: object,
+    feature_names: Sequence[str],
+    n_topics: int,
+    method: str,
+    random_state: int,
+    top_terms: int,
+) -> TopicModelReport:
+    """Fit an LDA or NMF topic model and return loadings and top terms per topic."""
+    matrix = np.asarray(counts, dtype=np.float64)
+    if matrix.ndim != 2:
+        raise ValueError("counts must be a 2D document-term matrix")
+    names = tuple(str(name) for name in feature_names)
+    if len(names) != matrix.shape[1]:
+        raise ValueError("feature_names length must match counts columns")
+    if n_topics < 1:
+        raise ValueError("n_topics must be >= 1")
+    if top_terms < 1:
+        raise ValueError("top_terms must be >= 1")
+    if method == "lda":
+        lda = LatentDirichletAllocation(n_components=n_topics, random_state=random_state)
+        lda.fit(matrix)
+        loadings = np.asarray(lda.transform(matrix), dtype=np.float64)
+        components = np.asarray(lda.components_, dtype=np.float64)
+        perplexity = float(lda.perplexity(matrix))
+    elif method == "nmf":
+        nmf = NMF(n_components=n_topics, random_state=random_state, init="nndsvda", max_iter=500)
+        loadings = np.asarray(nmf.fit_transform(matrix), dtype=np.float64)
+        components = np.asarray(nmf.components_, dtype=np.float64)
+        perplexity = float("nan")
+    else:
+        raise ValueError(f"Unsupported topic-model method: {method}")
+    top = tuple(tuple(names[int(i)] for i in np.argsort(component)[::-1][:top_terms]) for component in components)
+    document_topic_matrix = tuple(tuple(float(value) for value in row) for row in loadings)
+    return TopicModelReport(
+        method=method,
+        n_topics=n_topics,
+        document_topic_matrix=document_topic_matrix,
+        top_terms_by_topic=top,
+        perplexity=perplexity,
+    )

@@ -11,6 +11,7 @@ from stylometry_python_lib.evaluation.importance import (
 from stylometry_python_lib.evaluation.report import EvaluationReport, SplitDiagnostics, style_evaluation_report
 from stylometry_python_lib.evaluation.review import HumanReviewItem, HumanReviewPacket, human_review_packet
 from stylometry_python_lib.evaluation.topic import (
+    TopicModelReport,
     TopicPredictionControl,
     TopicPredictionReport,
     ablation_scores,
@@ -19,6 +20,7 @@ from stylometry_python_lib.evaluation.topic import (
     length_sensitivity,
     same_author_topic_shift_pairs,
     same_topic_hard_negative_pairs,
+    topic_model_report,
     topic_prediction_control_report,
     topic_prediction_leakage_score,
     two_way_effect_sizes,
@@ -66,6 +68,8 @@ __all__ = [
     "one_class_verification",
     "calibrated_binary_verification",
     "topic_prediction_control_report",
+    "TopicModelReport",
+    "topic_model_report",
     "topic_prediction_leakage_score",
     "two_way_effect_sizes",
 ]
