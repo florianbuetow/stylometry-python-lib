@@ -474,3 +474,10 @@ def test_llm_catalog_and_fail_fast_extraction_behavior_are_exhaustive() -> None:
         llm.fit(x, None)
     with pytest.raises(OptionalDependencyError, match=r"provider=openai.*model=gpt-style-judge.*prompt_version=stylometry-v1"):
         llm.transform(x)
+
+
+def test_llm_entries_record_replay_coverage() -> None:
+    registry = built_in_research_registry()
+    for entry in registry.entries:
+        if entry.bucket == ResearchBucket.LLM:
+            assert "replay" in entry.test_status

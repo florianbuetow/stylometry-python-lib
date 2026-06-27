@@ -332,7 +332,10 @@ def _llm_entry(
         output_mode,
         "fake-provider; configured OpenAI-compatible/LM Studio provider; endpoint capability diagnostics for embeddings",
         "stylometry_python_lib.features.optional; stylometry_python_lib.llm; stylometry_python_lib.llm_transformers",
-        "fake-provider, prompt/schema, diagnostics, configured LM Studio row/pair, and embedding capability tests present",
+        (
+            "fake-provider, prompt/schema, diagnostics, configured LM Studio row/pair, embedding capability, "
+            "and recorded/replay offline tests present; live-provider credential opt-in tests pending"
+        ),
         "docs/RESEARCH.md#llm-based-methods",
         1,
         sidecar_schema,
