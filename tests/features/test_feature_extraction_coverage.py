@@ -482,3 +482,12 @@ def test_llm_entries_record_replay_coverage() -> None:
     for entry in registry.entries:
         if entry.bucket == ResearchBucket.LLM:
             assert "replay" in entry.test_status
+
+
+def test_no_entry_left_partial_without_documented_delta() -> None:
+    registry = built_in_research_registry()
+    partial = [entry for entry in registry.entries if entry.status.value == "partial"]
+    for entry in partial:
+        assert "pending" in entry.test_status or "later work" in entry.test_status, entry.taxonomy_id
+    implemented = [entry for entry in registry.entries if entry.status.value == "implemented"]
+    assert len(implemented) >= 40
