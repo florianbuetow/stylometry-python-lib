@@ -460,9 +460,9 @@ _DETERMINISTIC_ENTRIES = (
         "letter_character_frequencies",
         "orthography_profile",
         "text::orthography_profile::*",
-        FeatureImplementationStatus.PARTIAL,
+        FeatureImplementationStatus.IMPLEMENTED,
         (
-            "count Unicode codepoints, Unicode categories, character classes, script inventories, and lowercase Latin "
+            "count Unicode codepoints, Unicode categories, character classes, expanded script inventories, and lowercase Latin "
             "letters with alphabetic and all-character normalization"
         ),
         InputLayer.RAW,
@@ -470,8 +470,8 @@ _DETERMINISTIC_ENTRIES = (
         "NaN when alphabetic or character denominators are zero; raw counts are valid zeroes",
         "fixed dense vector plus legacy lowercase letter frequency vector and raw-codepoint sidecar",
         FeatureOutputMode.DENSE_VECTOR,
-        194,
-        "letter, Unicode category, character-class, script inventory, raw codepoint, sidecar, and normalization golden tests present",
+        209,
+        "letter, Unicode category, character-class, expanded script inventory, raw codepoint, sidecar, and normalization golden tests present",
         "orthography_codepoint_sidecar_v1",
     ),
     _deterministic_entry(

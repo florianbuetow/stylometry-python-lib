@@ -307,6 +307,11 @@ def _unicode_scripts() -> tuple[UnicodeScript, ...]:
             ((0x3400, 0x4DBF), (0x4E00, 0x9FFF), (0xF900, 0xFAFF)),
         ),
         UnicodeScript("thai", "Thai letters", ((0x0E00, 0x0E7F),)),
+        UnicodeScript("armenian", "Armenian letters", ((0x0530, 0x058F),)),
+        UnicodeScript("georgian", "Georgian letters and supplement", ((0x10A0, 0x10FF), (0x1C90, 0x1CBF))),
+        UnicodeScript("bengali", "Bengali letters", ((0x0980, 0x09FF),)),
+        UnicodeScript("tamil", "Tamil letters", ((0x0B80, 0x0BFF),)),
+        UnicodeScript("ethiopic", "Ethiopic letters", ((0x1200, 0x137F),)),
     )
 
 

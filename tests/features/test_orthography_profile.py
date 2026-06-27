@@ -37,7 +37,7 @@ def test_orthography_profile_has_golden_unicode_codepoint_category_and_letter_va
     result = _as_frame(transformer.fit_transform(x, None))
 
     assert result.index.tolist() == ["doc-unicode"]
-    assert result.shape[1] == 168
+    assert result.shape[1] == 183
     assert tuple(result.columns) == orthography_profile_feature_names()
     assert _cell(result, "text::orthography_profile::codepoint_count") == 7.0
     assert _cell(result, "text::orthography_profile::unique_codepoint_count") == 7.0
@@ -168,3 +168,17 @@ def test_orthography_profile_supports_output_modes_serialization_and_no_mutation
     sidecars = cast(tuple[OrthographyCodepointSidecar, OrthographyCodepointSidecar], extractor.last_sidecars_[0].sidecars)
     assert sidecars[0].document_id == "first"
     assert sidecars[1].document_id == "second"
+
+
+def test_expanded_script_inventory_counts_new_scripts() -> None:
+    from stylometry_python_lib.features.orthography import _unicode_scripts
+
+    script_ids = {script.script_id for script in _unicode_scripts()}
+    for expected in ("armenian", "georgian", "bengali", "tamil", "ethiopic"):
+        assert expected in script_ids
+
+    config = english_preprocessing_config()
+    x = pd.DataFrame({"text": ["aԱb"]}, index=["arm"])  # U+0531 ARMENIAN CAPITAL LETTER AYB
+    transformer = OrthographyProfileTransformer(text_column="text", config=config, output="pandas")
+    result = _as_frame(transformer.fit_transform(x, None))
+    assert _cell(result, "text::orthography_profile::script=armenian::count") == 1.0
