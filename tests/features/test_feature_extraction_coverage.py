@@ -60,6 +60,7 @@ EXPECTED_DETERMINISTIC_SCALAR_VALUES = {
     "text::lexical_richness::mtld": 425.8799999999997,
     "text::lexical_richness::hdd": 0.9743589743589743,
     "text::lexical_richness::vocd_d": math.nan,
+    "text::lexical_richness::vocd_d_fast": math.nan,
     "text::lexical_richness::hapax_count": 37.0,
     "text::lexical_richness::dis_legomena_count": 1.0,
     "text::lexical_richness::yules_k": 13.149243918474689,
@@ -229,7 +230,7 @@ def test_all_deterministic_scalar_features_have_golden_values() -> None:
 
     result = _as_frame(transformer.fit_transform(x, None))
 
-    assert len(EXPECTED_DETERMINISTIC_SCALAR_VALUES) == 73
+    assert len(EXPECTED_DETERMINISTIC_SCALAR_VALUES) == 74
     assert tuple(EXPECTED_DETERMINISTIC_SCALAR_VALUES) == deterministic_feature_names()
     assert tuple(transformer.get_feature_names_out(None).tolist()) == deterministic_feature_names()
     _assert_single_row(result, EXPECTED_DETERMINISTIC_SCALAR_VALUES)
@@ -246,7 +247,7 @@ def test_research_registry_covers_every_v2_research_row_and_reports_separate_cou
     assert bucket_counts[ResearchBucket.LLM] == 20
     assert availability.planned_research_families == 90
     assert availability.implemented_feature_blocks == 90
-    assert availability.emitted_numeric_columns == 1508
+    assert availability.emitted_numeric_columns == 1509
     assert availability.sidecar_annotation_types == 55
     assert availability.catalog_only_unavailable_entries == 0
     assert availability.out_of_scope_entries == 0

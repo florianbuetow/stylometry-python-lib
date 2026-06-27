@@ -38,6 +38,7 @@ _LEXICAL_RICHNESS_FORMULAS = {
     "text::lexical_richness::mtld": "bidirectional mean segment length before TTR falls below 0.72",
     "text::lexical_richness::hdd": "hypergeometric diversity over a sample size of min(42, N)",
     "text::lexical_richness::vocd_d": "vocd-D hash-sampled TTR curve fit over 100 deterministic samples for each size 35 through 50",
+    "text::lexical_richness::vocd_d_fast": "approximate vocd-D via per-size inversion D=N*r^2/(2*(1-r)) averaged over sizes 35-50",
     "text::lexical_richness::yules_k": "10000 * (sum(i^2 * V_i) - N) / N^2",
     "text::lexical_richness::honore_r": "100 * log(N) / (1 - V1 / V)",
     "text::lexical_richness::guiraud_r": "V / sqrt(N)",
@@ -117,6 +118,7 @@ def deterministic_feature_names() -> tuple[str, ...]:
         "text::lexical_richness::mtld",
         "text::lexical_richness::hdd",
         "text::lexical_richness::vocd_d",
+        "text::lexical_richness::vocd_d_fast",
         "text::lexical_richness::hapax_count",
         "text::lexical_richness::dis_legomena_count",
         "text::lexical_richness::yules_k",
@@ -255,6 +257,7 @@ def _add_richness_features(values: dict[str, FeatureValue], tokens: tuple[str, .
     values["text::lexical_richness::mtld"] = _mtld(tokens)
     values["text::lexical_richness::hdd"] = _hdd(tokens, token_counts)
     values["text::lexical_richness::vocd_d"] = _vocd_d(tokens)
+    values["text::lexical_richness::vocd_d_fast"] = _vocd_d_fast(tokens)
     values["text::lexical_richness::hapax_count"] = defined_value(
         "text::lexical_richness::hapax_count", float(hapax_count), _short_warning(token_count)
     )
@@ -530,6 +533,23 @@ def _vocd_d(tokens: tuple[str, ...]) -> FeatureValue:
     if all(point[1] >= 1.0 for point in ttr_points):
         return undefined_value(name, "all_samples_unique_vocd_singularity", _short_warning(token_count))
     return defined_value(name, _fit_vocd_d(ttr_points), _short_warning(token_count))
+
+
+def _vocd_d_fast(tokens: tuple[str, ...]) -> FeatureValue:
+    name = "text::lexical_richness::vocd_d_fast"
+    token_count = len(tokens)
+    if token_count == 0:
+        return undefined_value(name, "zero_tokens", ())
+    if token_count < _VOCD_MAX_SAMPLE_SIZE:
+        return undefined_value(name, "below_vocd_50_token_threshold", _short_warning(token_count))
+    ttr_points = _vocd_empirical_ttr_points(tokens)
+    if all(point[1] >= 1.0 for point in ttr_points):
+        return undefined_value(name, "all_samples_unique_vocd_singularity", _short_warning(token_count))
+    estimates = [
+        float(sample_size) * mean_ttr * mean_ttr / (2.0 * (1.0 - mean_ttr)) for sample_size, mean_ttr in ttr_points if mean_ttr < 1.0
+    ]
+    diversity = sum(estimates) / float(len(estimates))
+    return defined_value(name, diversity, _short_warning(token_count))
 
 
 def _vocd_empirical_ttr_points(tokens: tuple[str, ...]) -> tuple[tuple[int, float], ...]:
