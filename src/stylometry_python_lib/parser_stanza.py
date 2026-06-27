@@ -108,9 +108,7 @@ def stanza_document_to_parsed(document_id: str, document: StanzaDocumentLike) ->
 
 def stanza_document_to_entities(document_id: str, document: StanzaDocumentLike) -> tuple[ParsedNamedEntity, ...]:
     """Convert Stanza entity spans into canonical ParsedNamedEntity records by char overlap."""
-    char_bounds: list[tuple[int, int]] = [
-        (word.start_char, word.end_char) for sentence in document.sentences for word in sentence.words
-    ]
+    char_bounds: list[tuple[int, int]] = [(word.start_char, word.end_char) for sentence in document.sentences for word in sentence.words]
     spans: list[StanzaSpanLike] = [span for sentence in document.sentences for span in sentence.ents]
     entities: list[ParsedNamedEntity] = []
     for span in spans:
