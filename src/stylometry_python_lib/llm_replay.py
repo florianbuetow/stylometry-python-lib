@@ -7,7 +7,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from stylometry_python_lib.llm import JsonObject, JsonValue, LLMRequest, LLMResponse
+from stylometry_python_lib.llm import JsonObject, JsonValue, LLMClientProtocol, LLMRequest, LLMResponse
 
 
 def record_key(request: LLMRequest) -> str:
@@ -113,3 +113,27 @@ def read_cassette(path: str | Path) -> LLMCassette:
             raise ValueError(f"Cassette entry must be an object: {path}")
         entries.append(LLMCassetteEntry(key=_require_str(item, "key"), response=_response_from_json(_require_object(item, "response"))))
     return LLMCassette(entries=tuple(entries))
+
+
+class RecordedResponseLLMClient:
+    """Wraps a live client, delegating calls and capturing responses for replay."""
+
+    provider = "recorded"
+
+    def __init__(self, inner: LLMClientProtocol) -> None:
+        self._inner = inner
+        self._entries: list[LLMCassetteEntry] = []
+
+    def complete(self, request: LLMRequest) -> LLMResponse:
+        """Delegate to the inner client and record the keyed response."""
+        response = self._inner.complete(request)
+        self._entries.append(LLMCassetteEntry(key=record_key(request), response=response))
+        return response
+
+    def list_models(self) -> tuple[str, ...]:
+        """Return the inner client's configured model ids."""
+        return self._inner.list_models()
+
+    def recorded_cassette(self) -> LLMCassette:
+        """Return the cassette captured so far."""
+        return LLMCassette(entries=tuple(self._entries))
