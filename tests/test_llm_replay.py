@@ -1,15 +1,24 @@
 """Tests for LLM recorded-response cassette tooling."""
 
+import math
 from dataclasses import dataclass, field
 
-from stylometry_python_lib.llm import LLMMessage, LLMRequest, LLMResponse
+import pandas as pd
+import pytest
+
+from stylometry_python_lib.llm import LLMMessage, LLMProviderError, LLMRequest, LLMResponse
 from stylometry_python_lib.llm_replay import (
     LLMCassette,
     LLMCassetteEntry,
     RecordedResponseLLMClient,
+    ReplayResponseLLMClient,
     read_cassette,
     record_key,
     write_cassette,
+)
+from stylometry_python_lib.llm_transformers import (
+    configured_llm_annotation_transformer,
+    configured_llm_row_feature_names,
 )
 
 
@@ -68,3 +77,35 @@ def test_recorded_client_delegates_and_captures() -> None:
     assert out == response
     assert len(inner.calls) == 1
     assert len(client.recorded_cassette().entries) == 1
+
+
+def test_replay_returns_recorded_response() -> None:
+    request = _request()
+    response = LLMResponse(
+        content='{"tone": 1.0}',
+        raw_response={},
+        provider="recorded",
+        model="m",
+        finish_reason="stop",
+        usage=None,
+        decoding_settings={},
+    )
+    cassette = LLMCassette(entries=(LLMCassetteEntry(key=record_key(request), response=response),))
+    client = ReplayResponseLLMClient(cassette=cassette)
+    assert client.complete(request) == response
+
+
+def test_replay_raises_on_missing_key() -> None:
+    client = ReplayResponseLLMClient(cassette=LLMCassette(entries=()))
+    with pytest.raises(LLMProviderError, match="no recorded response"):
+        client.complete(_request())
+
+
+def test_replay_miss_surfaces_as_diagnostic_through_transformer() -> None:
+    feature_names = configured_llm_row_feature_names()[:1]
+    client = ReplayResponseLLMClient(cassette=LLMCassette(entries=()))
+    transformer = configured_llm_annotation_transformer(client=client, text_column="text", feature_names=feature_names)
+    x = pd.DataFrame({"text": ["hello"]}, index=["d1"])
+    result = transformer.fit_transform(x, None)
+    assert result.shape == (1, 1)
+    assert math.isnan(result[0, 0])

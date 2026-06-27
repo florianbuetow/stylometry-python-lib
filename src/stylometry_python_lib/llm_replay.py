@@ -7,7 +7,16 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from stylometry_python_lib.llm import JsonObject, JsonValue, LLMClientProtocol, LLMRequest, LLMResponse
+from stylometry_python_lib.llm import (
+    JsonObject,
+    JsonValue,
+    LLMClientProtocol,
+    LLMDiagnostic,
+    LLMDiagnosticReason,
+    LLMProviderError,
+    LLMRequest,
+    LLMResponse,
+)
 
 
 def record_key(request: LLMRequest) -> str:
@@ -137,3 +146,31 @@ class RecordedResponseLLMClient:
     def recorded_cassette(self) -> LLMCassette:
         """Return the cassette captured so far."""
         return LLMCassette(entries=tuple(self._entries))
+
+
+class ReplayResponseLLMClient:
+    """Serves previously recorded responses for fully offline LLM tests."""
+
+    provider = "replay"
+
+    def __init__(self, cassette: LLMCassette) -> None:
+        self._by_key = {entry.key: entry.response for entry in cassette.entries}
+
+    def complete(self, request: LLMRequest) -> LLMResponse:
+        """Return the recorded response or fail fast with a provider diagnostic if absent."""
+        key = record_key(request)
+        if key not in self._by_key:
+            raise LLMProviderError(
+                LLMDiagnostic(
+                    reason=LLMDiagnosticReason.PROVIDER_ERROR,
+                    message=f"Replay client has no recorded response for feature={request.feature_name} key={key}",
+                    provider="replay",
+                    model="replay-model",
+                    endpoint="replay",
+                )
+            )
+        return self._by_key[key]
+
+    def list_models(self) -> tuple[str, ...]:
+        """Return the single synthetic replay model id."""
+        return ("replay-model",)

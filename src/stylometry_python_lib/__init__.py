@@ -237,6 +237,15 @@ from stylometry_python_lib.llm_features import (
     render_pairwise_llm_prompt,
     validate_llm_schema_payload,
 )
+from stylometry_python_lib.llm_replay import (
+    LLMCassette,
+    LLMCassetteEntry,
+    RecordedResponseLLMClient,
+    ReplayResponseLLMClient,
+    read_cassette,
+    record_key,
+    write_cassette,
+)
 from stylometry_python_lib.llm_transformers import (
     ConfiguredLLMAnnotationSidecar,
     ConfiguredLLMAnnotationTransformer,
@@ -296,6 +305,13 @@ __all__ = [
     "LayoutMarkerSidecar",
     "LayoutWhitespaceProfileTransformer",
     "LLMClientProtocol",
+    "LLMCassette",
+    "LLMCassetteEntry",
+    "RecordedResponseLLMClient",
+    "ReplayResponseLLMClient",
+    "read_cassette",
+    "record_key",
+    "write_cassette",
     "LLMConfig",
     "LLMConfigError",
     "LLMContextWindowError",
