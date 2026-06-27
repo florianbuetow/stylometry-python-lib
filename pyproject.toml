@@ -62,7 +62,7 @@ parser-spacy = [
     "spacy>=3.7",
 ]
 parser-stanza = [
-    "stanza>=1.8",
+    "stanza>=1.12.2",
 ]
 
 [tool.ruff]
@@ -242,9 +242,10 @@ skip = ".git,.venv,venv,build,dist,reports,*.lock,uv.lock"
 ignore-words = "config/codespell/ignore.txt"
 
 [tool.uv]
-# Supply-chain protection: ignore packages published in the last 30 days,
-# giving the community time to detect and yank malicious releases.
-exclude-newer = "30 days"
+# Supply-chain protection: ignore packages published in the last 7 days,
+# giving the community time to detect and yank malicious releases. Relaxed
+# from 30 days so the security-patched stanza release resolves.
+exclude-newer = "7 days"
 
 # Security floor: the latest semgrep transitively pins pyjwt to a vulnerable
 # 2.12.x via its [crypto] extra. Force the patched release so code-audit
