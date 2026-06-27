@@ -67,6 +67,8 @@ help:
     @printf "\033[0;33mCI & Testing:\033[0m\n"
     @printf "  %-40s %s\n" "test" "Run unit tests only (fast)"
     @printf "  %-40s %s\n" "test-coverage" "Run unit tests with coverage report"
+    @printf "  %-40s %s\n" "test-live-parser" "Opt-in live spaCy/Stanza tests (needs models)"
+    @printf "  %-40s %s\n" "test-live-llm" "Opt-in LLM replay/live tests"
     @printf "  %-40s %s\n" "ci" "Run ALL validation checks silently"
     @printf "  %-40s %s\n" "ci-verbose" "Run ALL validation checks (verbose)"
     @echo ""
@@ -235,6 +237,26 @@ test:
     @echo ""
     @printf "\033[0;34m=== Running Unit Tests ===\033[0m\n"
     @uv run pytest tests/ -v
+    @echo ""
+
+# Opt-in live parser integration tests (downloads/loads real spaCy + Stanza models).
+# NOT part of `ci`; requires the parser extras installed and STYLOMETRY_LIVE_PARSER=1.
+test-live-parser:
+    @echo ""
+    @printf "\033[0;34m=== Running Live Parser Integration Tests ===\033[0m\n"
+    @STYLOMETRY_LIVE_PARSER=1 uv run --extra parser-spacy --extra parser-stanza pytest tests/features/test_parser_spacy.py tests/features/test_parser_stanza.py -v
+    @echo ""
+    @printf "\033[0;32m✓ Live parser tests complete\033[0m\n"
+    @echo ""
+
+# Opt-in live/replay LLM integration tests. NOT part of `ci`; replay tests run
+# offline, live tests require explicit provider credentials in config.yaml.
+test-live-llm:
+    @echo ""
+    @printf "\033[0;34m=== Running LLM Replay/Live Integration Tests ===\033[0m\n"
+    @uv run pytest tests/test_llm_replay.py -v
+    @echo ""
+    @printf "\033[0;32m✓ LLM replay/live tests complete\033[0m\n"
     @echo ""
 
 # Run unit tests with coverage report and threshold check
