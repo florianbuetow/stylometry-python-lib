@@ -301,6 +301,9 @@ ci-verbose:
     just code-architecture
     just code-lspchecks
     just test
+    just test-coverage
+    just test-live-parser
+    just test-live-llm
     echo ""
     printf "\033[0;32m✓ All CI checks passed\033[0m\n"
     echo ""
@@ -351,6 +354,15 @@ ci:
 
     just test > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Test passed\033[0m\n"
+
+    just test-coverage > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-coverage failed\033[0m\n"; cat $TMPFILE; exit 1; }
+    printf "\033[0;32m✓ Test-coverage passed\033[0m\n"
+
+    just test-live-parser > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-live-parser failed\033[0m\n"; cat $TMPFILE; exit 1; }
+    printf "\033[0;32m✓ Test-live-parser passed\033[0m\n"
+
+    just test-live-llm > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-live-llm failed\033[0m\n"; cat $TMPFILE; exit 1; }
+    printf "\033[0;32m✓ Test-live-llm passed\033[0m\n"
 
     echo ""
     printf "\033[0;32m✓ All CI checks passed\033[0m\n"
