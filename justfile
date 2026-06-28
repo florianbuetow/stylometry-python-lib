@@ -240,11 +240,17 @@ test:
     @echo ""
 
 # Opt-in live parser integration tests (downloads/loads real spaCy + Stanza models).
-# NOT part of `ci`; requires the parser extras installed and STYLOMETRY_LIVE_PARSER=1.
+# NOT part of `ci`; gated by STYLOMETRY_LIVE_PARSER=1. The spaCy model is installed
+# into the environment after the sync, so the test run uses --no-sync to keep uv
+# from removing it before pytest executes.
 test-live-parser:
     @echo ""
+    @printf "\033[0;34m=== Downloading Live Parser Models ===\033[0m\n"
+    @uv run --extra parser-spacy --extra parser-stanza python -c "import stanza; stanza.download('en')"
+    @uv run --extra parser-spacy --extra parser-stanza python -m spacy download en_core_web_sm
+    @echo ""
     @printf "\033[0;34m=== Running Live Parser Integration Tests ===\033[0m\n"
-    @STYLOMETRY_LIVE_PARSER=1 uv run --extra parser-spacy --extra parser-stanza pytest tests/features/test_parser_spacy.py tests/features/test_parser_stanza.py -v
+    @STYLOMETRY_LIVE_PARSER=1 uv run --no-sync --extra parser-spacy --extra parser-stanza pytest tests/features/test_parser_spacy.py tests/features/test_parser_stanza.py -v
     @echo ""
     @printf "\033[0;32m✓ Live parser tests complete\033[0m\n"
     @echo ""

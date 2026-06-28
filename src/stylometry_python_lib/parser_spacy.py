@@ -24,6 +24,44 @@ from stylometry_python_lib.features.optional import (
 _DEPENDENT_CLAUSE_RELATIONS = frozenset({"ccomp", "advcl", "acl", "relcl", "csubj", "xcomp", "pcomp"})
 _COMPLEX_NOMINAL_RELATIONS = frozenset({"nmod", "acl", "appos", "nummod"})
 
+# spaCy English models emit the ClearNLP/OntoNotes dependency scheme, but the
+# canonical ParsedDependencyArc contract is Universal Dependencies. Normalize the
+# ClearNLP-only labels to their Universal Dependencies base relation so spaCy and
+# Stanza output share one scheme. Labels already in Universal Dependencies pass
+# through unchanged.
+_SPACY_RELATION_TO_UNIVERSAL = {
+    "acomp": "xcomp",
+    "agent": "obl",
+    "attr": "xcomp",
+    "auxpass": "aux",
+    "csubjpass": "csubj",
+    "dative": "iobj",
+    "dobj": "obj",
+    "intj": "discourse",
+    "meta": "dep",
+    "neg": "advmod",
+    "npadvmod": "obl",
+    "nsubjpass": "nsubj",
+    "oprd": "xcomp",
+    "pcomp": "ccomp",
+    "pobj": "obl",
+    "poss": "nmod",
+    "preconj": "cc",
+    "predet": "det",
+    "prep": "case",
+    "prt": "compound",
+    "quantmod": "advmod",
+    "relcl": "acl",
+}
+
+
+def _universal_relation(dependency_label: str) -> str:
+    """Map a spaCy dependency label to its Universal Dependencies base relation."""
+    normalized = dependency_label.lower()
+    if normalized in _SPACY_RELATION_TO_UNIVERSAL:
+        return _SPACY_RELATION_TO_UNIVERSAL[normalized]
+    return normalized
+
 
 class SpacyTokenLike(Protocol):
     """Minimal structural view of a spaCy token."""
@@ -100,7 +138,7 @@ def spacy_document_to_parsed(document_id: str, doc: SpacyDocLike) -> ParsedDocum
         ParsedDependencyArc(
             head_index=None if token.head.i == token.i else token.head.i,
             dependent_index=token.i,
-            relation=token.dep_.lower(),
+            relation=_universal_relation(token.dep_),
         )
         for token in doc
     )

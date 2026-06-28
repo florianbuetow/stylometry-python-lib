@@ -95,6 +95,30 @@ def test_spacy_conversion_produces_canonical_parsed_document() -> None:
     assert root_arcs[0].dependent_index == 2
 
 
+def _clearnlp_doc() -> _FakeDoc:
+    she = _FakeToken(text="She", pos_="PRON", dep_="nsubjpass", i=0, morph="")
+    was = _FakeToken(text="was", pos_="AUX", dep_="auxpass", i=1, morph="")
+    given = _FakeToken(text="given", pos_="VERB", dep_="ROOT", i=2, morph="")
+    a = _FakeToken(text="a", pos_="DET", dep_="det", i=3, morph="")
+    book = _FakeToken(text="book", pos_="NOUN", dep_="dobj", i=4, morph="")
+    by = _FakeToken(text="by", pos_="ADP", dep_="agent", i=5, morph="")
+    him = _FakeToken(text="him", pos_="PRON", dep_="pobj", i=6, morph="")
+    she.head_token = given
+    was.head_token = given
+    given.head_token = given
+    a.head_token = book
+    book.head_token = given
+    by.head_token = given
+    him.head_token = by
+    return _FakeDoc(tokens=[she, was, given, a, book, by, him], spans=[])
+
+
+def test_spacy_clearnlp_relations_normalize_to_universal_dependencies() -> None:
+    parsed = spacy_document_to_parsed("d0", _clearnlp_doc())
+    relations = tuple(arc.relation for arc in parsed.dependency_arcs)
+    assert relations == ("nsubj", "aux", "root", "det", "obj", "obl", "obl")
+
+
 def test_spacy_adapter_parses_entities_and_counts() -> None:
     adapter = SpacyParserAdapter(pipeline=_FakePipeline(doc=_sentence_doc()), model="fake", version="0")
     entities = adapter.parse_named_entities((("d0", "The cat sat."),))

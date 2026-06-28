@@ -44,15 +44,43 @@ _UNIVERSAL_POS_TAGS = (
     "X",
 )
 
+# Full Universal Dependencies v2 universal feature inventory plus the
+# treebank-specific features that the spaCy and Stanza English models emit
+# (ConjType, NumForm, Punct*, AdpType, PartType, Style, Hyph). Real parser
+# output must validate without rejecting standard attributes such as Definite,
+# PronType, VerbForm, or PunctType.
 _MORPHOLOGY_ATTRIBUTES = (
+    "Abbr",
+    "AdpType",
+    "Animacy",
     "Aspect",
     "Case",
+    "Clusivity",
+    "ConjType",
+    "Definite",
     "Degree",
+    "Evident",
+    "Foreign",
     "Gender",
+    "Hyph",
     "Mood",
+    "NounClass",
+    "NumForm",
+    "NumType",
     "Number",
+    "PartType",
     "Person",
+    "Polarity",
+    "Polite",
+    "Poss",
+    "PronType",
+    "PunctSide",
+    "PunctType",
+    "Reflex",
+    "Style",
     "Tense",
+    "Typo",
+    "VerbForm",
     "Voice",
 )
 

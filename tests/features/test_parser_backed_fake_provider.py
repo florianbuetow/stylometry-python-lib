@@ -7,6 +7,7 @@ import pickle
 from typing import cast
 
 import pandas as pd
+import pytest
 from scipy import sparse
 from sklearn.exceptions import NotFittedError
 
@@ -554,6 +555,29 @@ def test_parser_pos_lexical_density_real_provider_fails_fast_until_adapter_exist
         raise AssertionError("Expected real parser provider to fail fast")
 
 
+def test_parsed_morphology_feature_accepts_full_universal_dependency_inventory() -> None:
+    accepted = (
+        "Definite",
+        "PronType",
+        "VerbForm",
+        "PunctType",
+        "NumType",
+        "NumForm",
+        "Polarity",
+        "Poss",
+        "Reflex",
+        "Abbr",
+        "ConjType",
+    )
+    for attribute in accepted:
+        feature = ParsedMorphologyFeature(attribute=attribute, value="X")
+        assert feature.attribute == attribute
+    with pytest.raises(ValueError, match="Unsupported Universal Dependencies morphology attribute"):
+        ParsedMorphologyFeature(attribute="NotARealAttribute", value="X")
+    with pytest.raises(ValueError, match="value must not be empty"):
+        ParsedMorphologyFeature(attribute="Definite", value="")
+
+
 def test_fake_parser_missing_or_empty_parser_layer_fails_explicitly() -> None:
     x = pd.DataFrame({"text": ["left", "right"]}, index=["doc-a", "doc-b"])
     missing_transformer = parser_backed_transformer(
@@ -1096,9 +1120,9 @@ def test_fake_parser_morphology_validates_missing_layers_configuration_and_fit_s
 
 def test_fake_parser_morphology_validates_ud_attribute_fixture_contract() -> None:
     try:
-        ParsedMorphologyFeature(attribute="Polarity", value="Neg")
+        ParsedMorphologyFeature(attribute="NotARealAttribute", value="Neg")
     except ValueError as error:
-        assert str(error) == "Unsupported Universal Dependencies morphology attribute: Polarity"
+        assert str(error) == "Unsupported Universal Dependencies morphology attribute: NotARealAttribute"
     else:
         raise AssertionError("Expected unsupported morphology attribute validation to fail")
     try:
