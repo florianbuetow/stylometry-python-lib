@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fcntl
 import json
+import os
 import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -32,6 +33,11 @@ from stylometry_python_lib import (
     validate_llm_schema_payload,
 )
 from stylometry_python_lib.llm import JsonObject, JsonValue
+
+pytestmark = pytest.mark.skipif(
+    os.environ.get("STYLOMETRY_LIVE_LLM") != "1",
+    reason="opt-in live LM Studio test; set STYLOMETRY_LIVE_LLM=1 to run via `just test-live-llm`",
+)
 
 
 def test_configured_lm_studio_endpoint_exposes_configured_model() -> None:

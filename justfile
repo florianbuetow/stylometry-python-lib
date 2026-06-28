@@ -250,11 +250,12 @@ test-live-parser:
     @echo ""
 
 # Opt-in live/replay LLM integration tests. NOT part of `ci`; replay tests run
-# offline, live tests require explicit provider credentials in config.yaml.
+# offline, live tests execute against the configured LM Studio endpoint in config.yaml
+# and are gated by STYLOMETRY_LIVE_LLM=1 so the default offline `just ci` never calls them.
 test-live-llm:
     @echo ""
     @printf "\033[0;34m=== Running LLM Replay/Live Integration Tests ===\033[0m\n"
-    @uv run pytest tests/test_llm_replay.py -v
+    @STYLOMETRY_LIVE_LLM=1 uv run pytest tests/test_llm_replay.py tests/test_llm_configured_provider.py -v
     @echo ""
     @printf "\033[0;32m✓ LLM replay/live tests complete\033[0m\n"
     @echo ""
