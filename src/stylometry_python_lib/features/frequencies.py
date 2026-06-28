@@ -303,6 +303,115 @@ class ClosedClassLexiconTransformer(BaseEstimator):
         return self.feature_names_out_
 
 
+class PersonGroupTransformer(BaseEstimator):
+    """Emit grouped first/second/third-person pronoun counts and rates with versioned-lexicon metadata."""
+
+    def __init__(self, text_column: str, config: PreprocessingConfig, output: str) -> None:
+        self.text_column = text_column
+        self.config = config
+        self.output = output
+
+    def fit(self, x: object, y: object) -> Self:
+        """Load the versioned pronoun lexicon and freeze grouped person output names."""
+        del y
+        validate_output_mode(self.output)
+        _ = text_series(x, self.text_column)
+        lexicon = load_lexicon("pronouns")
+        self.lexicon_ = lexicon
+        self.feature_names_out_ = np.asarray(_person_group_feature_names(), dtype=object)
+        self.registry_ = FeatureRegistry(
+            specs=tuple(_person_group_feature_spec(str(name), lexicon) for name in self.feature_names_out_.tolist())
+        )
+        self.registry_.require_complete()
+        self.n_features_in_ = 1
+        self.feature_names_in_ = np.asarray([self.text_column], dtype=object)
+        return self
+
+    def transform(self, x: object) -> pd.DataFrame | np.ndarray | sparse.csr_matrix:
+        """Compute grouped person counts and per-1,000-token rates."""
+        require_fitted(self, "lexicon_")
+        rows: list[list[float]] = []
+        diagnostics: list[tuple[FeatureDiagnostic, ...]] = []
+        series = text_series(x, self.text_column)
+        for row_index, text in enumerate(series.tolist()):
+            view = DocumentView.from_text(str(text), self.config, document_id=str(series.index[row_index]))
+            row, row_diagnostics = _person_group_row(view, self.lexicon_)
+            rows.append(row)
+            diagnostics.append(row_diagnostics)
+        self.last_diagnostics_ = tuple(diagnostics)
+        frame = pd.DataFrame(rows, columns=self.feature_names_out_, index=series.index)
+        if self.output == "pandas":
+            return frame
+        if self.output == "sparse":
+            return sparse.csr_matrix(frame.to_numpy(dtype=float))
+        return frame.to_numpy(dtype=float)
+
+    def fit_transform(self, x: object, y: object) -> pd.DataFrame | np.ndarray | sparse.csr_matrix:
+        """Fit, then transform with explicit target metadata."""
+        return self.fit(x, y).transform(x)
+
+    def get_feature_names_out(self, input_features: object) -> np.ndarray:
+        """Return stable grouped person feature names."""
+        del input_features
+        require_fitted(self, "feature_names_out_")
+        return self.feature_names_out_
+
+
+class LexicalDensityByLexiconTransformer(BaseEstimator):
+    """Emit overall and grouped content-word density ratios from a versioned content lexicon."""
+
+    def __init__(self, text_column: str, config: PreprocessingConfig, lexicon_name: str, output: str) -> None:
+        self.text_column = text_column
+        self.config = config
+        self.lexicon_name = lexicon_name
+        self.output = output
+
+    def fit(self, x: object, y: object) -> Self:
+        """Load the versioned content lexicon and freeze density output names."""
+        del y
+        validate_output_mode(self.output)
+        _ = text_series(x, self.text_column)
+        lexicon = load_lexicon(self.lexicon_name)
+        self.lexicon_ = lexicon
+        self.feature_names_out_ = np.asarray(_lexical_density_feature_names(lexicon), dtype=object)
+        self.registry_ = FeatureRegistry(
+            specs=tuple(_lexical_density_feature_spec(str(name), lexicon) for name in self.feature_names_out_.tolist())
+        )
+        self.registry_.require_complete()
+        self.n_features_in_ = 1
+        self.feature_names_in_ = np.asarray([self.text_column], dtype=object)
+        return self
+
+    def transform(self, x: object) -> pd.DataFrame | np.ndarray | sparse.csr_matrix:
+        """Compute overall and grouped content-lexicon density ratios."""
+        require_fitted(self, "lexicon_")
+        rows: list[list[float]] = []
+        diagnostics: list[tuple[FeatureDiagnostic, ...]] = []
+        series = text_series(x, self.text_column)
+        for row_index, text in enumerate(series.tolist()):
+            view = DocumentView.from_text(str(text), self.config, document_id=str(series.index[row_index]))
+            row, row_diagnostics = _lexical_density_row(view, self.lexicon_)
+            rows.append(row)
+            diagnostics.append(row_diagnostics)
+        self.last_diagnostics_ = tuple(diagnostics)
+        frame = pd.DataFrame(rows, columns=self.feature_names_out_, index=series.index)
+        if self.output == "pandas":
+            return frame
+        if self.output == "sparse":
+            return sparse.csr_matrix(frame.to_numpy(dtype=float))
+        return frame.to_numpy(dtype=float)
+
+    def fit_transform(self, x: object, y: object) -> pd.DataFrame | np.ndarray | sparse.csr_matrix:
+        """Fit, then transform with explicit target metadata."""
+        return self.fit(x, y).transform(x)
+
+    def get_feature_names_out(self, input_features: object) -> np.ndarray:
+        """Return stable content-lexicon density feature names."""
+        del input_features
+        require_fitted(self, "feature_names_out_")
+        return self.feature_names_out_
+
+
 def function_word_frequency_transformer(text_column: str, config: PreprocessingConfig, output: str) -> FixedVocabularyFrequencyTransformer:
     """Build a fixed-vocabulary function-word frequency transformer."""
     vocabulary = tuple(sorted(function_words_lexicon()))
@@ -392,6 +501,18 @@ def contraction_lexicon_transformer(text_column: str, config: PreprocessingConfi
         token_layer=InputLayer.ORTHOGRAPHIC_TOKENS,
         output=output,
     )
+
+
+def person_group_transformer(text_column: str, config: PreprocessingConfig, output: str) -> PersonGroupTransformer:
+    """Build a grouped first/second/third-person pronoun count and rate transformer."""
+    return PersonGroupTransformer(text_column=text_column, config=config, output=output)
+
+
+def lexical_density_by_lexicon_transformer(
+    text_column: str, config: PreprocessingConfig, output: str
+) -> LexicalDensityByLexiconTransformer:
+    """Build a versioned content-lexicon density transformer."""
+    return LexicalDensityByLexiconTransformer(text_column=text_column, config=config, lexicon_name="content_words", output=output)
 
 
 def letter_frequency_transformer(text_column: str, config: PreprocessingConfig, output: str) -> CharacterFrequencyTransformer:
@@ -628,6 +749,126 @@ def _closed_class_feature_spec(
         output_dtype="float64",
         undefined_behavior=undefined_behavior,
         normalization=normalization,
+        sparsity="dense_scalar",
+        stability_status=StabilityStatus.DETERMINISTIC,
+    )
+
+
+_PERSON_GROUPS: tuple[str, ...] = ("first_person", "second_person", "third_person")
+
+
+def _person_group_name(group: str, measure: str) -> str:
+    return f"text::stance::person={group}::{measure}"
+
+
+def _person_group_feature_names() -> tuple[str, ...]:
+    names: list[str] = []
+    for group in _PERSON_GROUPS:
+        names.extend((_person_group_name(group, "count"), _person_group_name(group, "per_1000_tokens")))
+    return tuple(names)
+
+
+def _person_group_counts(counts: Counter[str], lexicon: VersionedLexicon) -> dict[str, int]:
+    group_counts = {group: 0 for group in _PERSON_GROUPS}
+    for entry in lexicon.entries:
+        count = counts[entry.token]
+        for group in entry.groups:
+            if group in group_counts:
+                group_counts[group] += count
+    return group_counts
+
+
+def _person_group_row(view: DocumentView, lexicon: VersionedLexicon) -> tuple[list[float], tuple[FeatureDiagnostic, ...]]:
+    counts = Counter(view.tokens)
+    token_count = len(view.tokens)
+    group_counts = _person_group_counts(counts, lexicon)
+    values: list[float] = []
+    diagnostics: list[FeatureDiagnostic] = []
+    for group in _PERSON_GROUPS:
+        group_count = float(group_counts[group])
+        values.append(group_count)
+        values.append(_per_1000_value(group_count, token_count))
+        _add_rate_diagnostic(diagnostics, _person_group_name(group, "per_1000_tokens"), token_count)
+    return values, tuple(diagnostics)
+
+
+def _person_group_feature_spec(name: str, lexicon: VersionedLexicon) -> FeatureSpec:
+    normalization = "raw_count"
+    undefined_behavior = "count is zero when the person group is absent and the token layer exists"
+    if name.endswith("per_1000_tokens"):
+        normalization = "per_1000_tokens"
+        undefined_behavior = "NaN with FeatureDiagnostic reason zero_tokens when token count is zero"
+    return FeatureSpec(
+        name=name,
+        family="stance_person",
+        description=f"Grouped person pronoun feature from {lexicon.lexicon_id}",
+        formula_or_rule="count first/second/third-person pronoun group occurrences; rate = count * 1000 / token_count",
+        input_layer=InputLayer.TOKENS,
+        topic_dependence=TopicDependence.MIXED,
+        text_length_policy="counts are defined for an existing token layer; per-1,000-token rates are undefined when token count is zero",
+        provenance=(
+            f"lexicon_id={lexicon.lexicon_id}; language={lexicon.language}; version={lexicon.version}; "
+            f"source={lexicon.source}; license_note={lexicon.license_note}; normalization={lexicon.normalization}; "
+            "person_groups=first_person,second_person,third_person"
+        ),
+        output_dtype="float64",
+        undefined_behavior=undefined_behavior,
+        normalization=normalization,
+        sparsity="dense_scalar",
+        stability_status=StabilityStatus.DETERMINISTIC,
+    )
+
+
+def _lexical_density_overall_name(lexicon: VersionedLexicon) -> str:
+    return f"text::lexical_density::lexicon={lexicon.lexicon_id}::ratio"
+
+
+def _lexical_density_group_name(lexicon: VersionedLexicon, group: str) -> str:
+    return f"text::lexical_density::lexicon={lexicon.lexicon_id}::group={group}::ratio"
+
+
+def _lexical_density_feature_names(lexicon: VersionedLexicon) -> tuple[str, ...]:
+    names: list[str] = [_lexical_density_overall_name(lexicon)]
+    names.extend(_lexical_density_group_name(lexicon, group) for group in lexicon.groups())
+    return tuple(names)
+
+
+def _ratio_or_nan(count: int, token_count: int) -> float:
+    if token_count == 0:
+        return float("nan")
+    return float(count) / float(token_count)
+
+
+def _lexical_density_row(view: DocumentView, lexicon: VersionedLexicon) -> tuple[list[float], tuple[FeatureDiagnostic, ...]]:
+    counts = Counter(view.tokens)
+    token_count = len(view.tokens)
+    overall_count = sum(counts[token] for token in lexicon.tokens())
+    group_counts = _closed_class_group_counts(counts, lexicon)
+    values: list[float] = [_ratio_or_nan(overall_count, token_count)]
+    diagnostics: list[FeatureDiagnostic] = []
+    _add_rate_diagnostic(diagnostics, _lexical_density_overall_name(lexicon), token_count)
+    for group in lexicon.groups():
+        values.append(_ratio_or_nan(group_counts[group], token_count))
+        _add_rate_diagnostic(diagnostics, _lexical_density_group_name(lexicon, group), token_count)
+    return values, tuple(diagnostics)
+
+
+def _lexical_density_feature_spec(name: str, lexicon: VersionedLexicon) -> FeatureSpec:
+    return FeatureSpec(
+        name=name,
+        family="lexical_density",
+        description=f"Versioned content-lexicon density ratio from {lexicon.lexicon_id}",
+        formula_or_rule="content-lexicon token hits (overall or grouped) divided by total token count",
+        input_layer=InputLayer.TOKENS,
+        topic_dependence=TopicDependence.MIXED,
+        text_length_policy="ratios are undefined when token count is zero",
+        provenance=(
+            f"lexicon_id={lexicon.lexicon_id}; language={lexicon.language}; version={lexicon.version}; "
+            f"source={lexicon.source}; license_note={lexicon.license_note}; normalization={lexicon.normalization}"
+        ),
+        output_dtype="float64",
+        undefined_behavior="NaN with FeatureDiagnostic reason zero_tokens when token count is zero",
+        normalization="ratio",
         sparsity="dense_scalar",
         stability_status=StabilityStatus.DETERMINISTIC,
     )

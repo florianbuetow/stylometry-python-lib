@@ -13,12 +13,16 @@ from stylometry_python_lib import (
     ClosedClassLexiconTransformer,
     ContractionExpansionSidecar,
     FeatureExtractor,
+    LexicalDensityByLexiconTransformer,
+    PersonGroupTransformer,
     auxiliary_lexicon_transformer,
     contraction_lexicon_transformer,
     english_preprocessing_config,
     function_word_lexicon_transformer,
+    lexical_density_by_lexicon_transformer,
     load_lexicon,
     modal_lexicon_transformer,
+    person_group_transformer,
     pronoun_lexicon_transformer,
     stopword_lexicon_transformer,
 )
@@ -233,3 +237,109 @@ def test_feature_extractor_collects_contraction_sidecars_without_changing_rows()
     assert sidecars[0].ambiguous_match_count == 0
     assert sidecars[1].document_id == "ambiguous"
     assert sidecars[1].ambiguous_match_count == 1
+
+
+def test_person_group_transformer_emits_grouped_counts_rates_and_metadata() -> None:
+    config = english_preprocessing_config()
+    x = pd.DataFrame({"text": ["I you it we they"]}, index=["doc-person"])
+    transformer = person_group_transformer(text_column="text", config=config, output="pandas")
+
+    result = _as_frame(transformer.fit_transform(x, None))
+
+    assert result.index.tolist() == ["doc-person"]
+    assert tuple(result.columns) == (
+        "text::stance::person=first_person::count",
+        "text::stance::person=first_person::per_1000_tokens",
+        "text::stance::person=second_person::count",
+        "text::stance::person=second_person::per_1000_tokens",
+        "text::stance::person=third_person::count",
+        "text::stance::person=third_person::per_1000_tokens",
+    )
+    assert _cell(result, "text::stance::person=first_person::count") == 2.0
+    assert _cell(result, "text::stance::person=first_person::per_1000_tokens") == 400.0
+    assert _cell(result, "text::stance::person=second_person::count") == 1.0
+    assert _cell(result, "text::stance::person=second_person::per_1000_tokens") == 200.0
+    assert _cell(result, "text::stance::person=third_person::count") == 2.0
+    assert _cell(result, "text::stance::person=third_person::per_1000_tokens") == 400.0
+    spec = transformer.registry_.by_name("text::stance::person=first_person::count")
+    assert spec.family == "stance_person"
+    assert spec.topic_dependence.value == "mixed"
+    assert "lexicon_id=pronouns_en_v1" in spec.provenance
+    assert "person_groups=first_person,second_person,third_person" in spec.provenance
+
+
+def test_person_group_transformer_undefined_rates_output_modes_and_serialization() -> None:
+    config = english_preprocessing_config()
+    x = pd.DataFrame({"text": ["", "I can go"]}, index=["empty", "filled"])
+    original = x.copy(deep=True)
+    transformer = person_group_transformer(text_column="text", config=config, output="pandas")
+
+    result = _as_frame(transformer.fit_transform(x, None))
+    loaded = cast(PersonGroupTransformer, pickle.loads(pickle.dumps(transformer)))
+    restored = _as_frame(loaded.transform(x))
+    sparse_result = person_group_transformer(text_column="text", config=config, output="sparse").fit_transform(x, None)
+    numpy_result = person_group_transformer(text_column="text", config=config, output="numpy").fit_transform(x, None)
+    extractor = FeatureExtractor(blocks=(person_group_transformer("text", config, "pandas"),), output="pandas")
+    extractor_frame = _as_frame(extractor.fit_transform(x, None))
+
+    pd.testing.assert_frame_equal(x, original)
+    assert _cell(result, "text::stance::person=first_person::count", row=0) == 0.0
+    assert math.isnan(_cell(result, "text::stance::person=first_person::per_1000_tokens", row=0))
+    assert result["text::stance::person=first_person::per_1000_tokens"].iloc[1] == 1000.0 / 3.0
+    assert transformer.last_diagnostics_[0][0].reason == "zero_tokens"
+    assert sparse.issparse(sparse_result)
+    assert sparse_result.shape == result.shape
+    assert numpy_result.shape == result.shape
+    pd.testing.assert_frame_equal(result, restored)
+    assert extractor_frame.shape == result.shape
+
+
+def test_lexical_density_by_lexicon_emits_overall_and_grouped_ratios_with_metadata() -> None:
+    config = english_preprocessing_config()
+    x = pd.DataFrame({"text": ["the people make good time and really know great"]}, index=["doc-density"])
+    transformer = lexical_density_by_lexicon_transformer(text_column="text", config=config, output="pandas")
+
+    result = _as_frame(transformer.fit_transform(x, None))
+
+    assert result.index.tolist() == ["doc-density"]
+    assert tuple(result.columns) == (
+        "text::lexical_density::lexicon=content_words_en_seed_v1::ratio",
+        "text::lexical_density::lexicon=content_words_en_seed_v1::group=nouns::ratio",
+        "text::lexical_density::lexicon=content_words_en_seed_v1::group=verbs::ratio",
+        "text::lexical_density::lexicon=content_words_en_seed_v1::group=adjectives::ratio",
+        "text::lexical_density::lexicon=content_words_en_seed_v1::group=adverbs::ratio",
+    )
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::ratio"), 7.0 / 9.0)
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=nouns::ratio"), 2.0 / 9.0)
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=verbs::ratio"), 2.0 / 9.0)
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=adjectives::ratio"), 2.0 / 9.0)
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=adverbs::ratio"), 1.0 / 9.0)
+    spec = transformer.registry_.by_name("text::lexical_density::lexicon=content_words_en_seed_v1::group=nouns::ratio")
+    assert spec.family == "lexical_density"
+    assert spec.normalization == "ratio"
+    assert "lexicon_id=content_words_en_seed_v1" in spec.provenance
+    assert "version=1.0.0" in spec.provenance
+
+
+def test_lexical_density_by_lexicon_undefined_ratios_output_modes_and_serialization() -> None:
+    config = english_preprocessing_config()
+    x = pd.DataFrame({"text": ["", "make good time"]}, index=["empty", "filled"])
+    original = x.copy(deep=True)
+    transformer = lexical_density_by_lexicon_transformer(text_column="text", config=config, output="pandas")
+
+    result = _as_frame(transformer.fit_transform(x, None))
+    loaded = cast(LexicalDensityByLexiconTransformer, pickle.loads(pickle.dumps(transformer)))
+    restored = _as_frame(loaded.transform(x))
+    sparse_result = lexical_density_by_lexicon_transformer(text_column="text", config=config, output="sparse").fit_transform(x, None)
+    numpy_result = lexical_density_by_lexicon_transformer(text_column="text", config=config, output="numpy").fit_transform(x, None)
+
+    pd.testing.assert_frame_equal(x, original)
+    assert math.isnan(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::ratio", row=0))
+    assert transformer.last_diagnostics_[0][0].reason == "zero_tokens"
+    assert _cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::ratio", row=1) == 1.0
+    assert math.isclose(_cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=nouns::ratio", row=1), 1.0 / 3.0)
+    assert _cell(result, "text::lexical_density::lexicon=content_words_en_seed_v1::group=adverbs::ratio", row=1) == 0.0
+    assert sparse.issparse(sparse_result)
+    assert sparse_result.shape == result.shape
+    assert numpy_result.shape == result.shape
+    pd.testing.assert_frame_equal(result, restored)

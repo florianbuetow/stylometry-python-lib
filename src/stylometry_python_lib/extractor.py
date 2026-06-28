@@ -15,7 +15,9 @@ from stylometry_python_lib.features.frequencies import (
     function_word_frequency_transformer,
     function_word_lexicon_transformer,
     letter_frequency_transformer,
+    lexical_density_by_lexicon_transformer,
     modal_lexicon_transformer,
+    person_group_transformer,
     pronoun_lexicon_transformer,
     punctuation_frequency_transformer,
     stopword_lexicon_transformer,
@@ -75,6 +77,8 @@ def default_deterministic_extractor(text_column: str, output: str) -> FeatureExt
     function_word_lexicon_block = function_word_lexicon_transformer(text_column=text_column, config=config, output="pandas")
     stopword_block = stopword_lexicon_transformer(text_column=text_column, config=config, output="pandas")
     pronoun_block = pronoun_lexicon_transformer(text_column=text_column, config=config, output="pandas")
+    person_group_block = person_group_transformer(text_column=text_column, config=config, output="pandas")
+    lexical_density_by_lexicon_block = lexical_density_by_lexicon_transformer(text_column=text_column, config=config, output="pandas")
     modal_block = modal_lexicon_transformer(text_column=text_column, config=config, output="pandas")
     auxiliary_block = auxiliary_lexicon_transformer(text_column=text_column, config=config, output="pandas")
     contraction_block = contraction_lexicon_transformer(text_column=text_column, config=config, output="pandas")
@@ -126,6 +130,8 @@ def default_deterministic_extractor(text_column: str, output: str) -> FeatureExt
             function_word_lexicon_block,
             stopword_block,
             pronoun_block,
+            person_group_block,
+            lexical_density_by_lexicon_block,
             modal_block,
             auxiliary_block,
             contraction_block,
