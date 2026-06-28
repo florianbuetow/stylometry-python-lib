@@ -51,6 +51,9 @@ help:
     @printf "\033[0;33mRun:\033[0m\n"
     @printf "  %-40s %s\n" "run" "Run the main application"
     @echo ""
+    @printf "\033[0;33mPackaging:\033[0m\n"
+    @printf "  %-40s %s\n" "package" "Build the pip-installable wheel + sdist into dist/"
+    @echo ""
     @printf "\033[0;33mCode Quality:\033[0m\n"
     @printf "  %-40s %s\n" "code-format" "Auto-fix code style and formatting"
     @printf "  %-40s %s\n" "code-style" "Check code style and formatting (read-only)"
@@ -67,6 +70,7 @@ help:
     @printf "\033[0;33mCI & Testing:\033[0m\n"
     @printf "  %-40s %s\n" "test" "Run unit tests only (fast)"
     @printf "  %-40s %s\n" "test-coverage" "Run unit tests with coverage report"
+    @printf "  %-40s %s\n" "test-install" "Verify pip-installability in an isolated temp env"
     @printf "  %-40s %s\n" "test-live-parser" "Opt-in live spaCy/Stanza tests (needs models)"
     @printf "  %-40s %s\n" "test-live-llm" "Opt-in LLM replay/live tests"
     @printf "  %-40s %s\n" "ci" "Run ALL validation checks silently"
@@ -118,6 +122,15 @@ run:
     @echo ""
     @printf "\033[0;34m=== Running Application ===\033[0m\n"
     @uv run src/main.py
+    @echo ""
+
+# Build the pip-installable distribution (wheel + sdist) into dist/
+package:
+    @echo ""
+    @printf "\033[0;34m=== Building Distribution (wheel + sdist) ===\033[0m\n"
+    @rm -rf dist
+    @uv build
+    @printf "\033[0;32m✓ Distribution built in dist/\033[0m\n"
     @echo ""
 
 # Auto-fix code style and formatting
@@ -239,6 +252,18 @@ test:
     @uv run pytest tests/ -v
     @echo ""
 
+# Verify pip-installability: build a wheel and install it via pip in an isolated temp
+# environment, then import the package and load its bundled data. Gated by
+# STYLOMETRY_TEST_PACKAGING=1 so the default fast `just test` skips it; uv keeps the
+# install fully isolated from the project .venv and the global environment.
+test-install:
+    @echo ""
+    @printf "\033[0;34m=== Verifying pip-installability (isolated temp env) ===\033[0m\n"
+    @STYLOMETRY_TEST_PACKAGING=1 uv run pytest tests/test_pip_install.py -v
+    @echo ""
+    @printf "\033[0;32m✓ Package installs via pip in a clean environment\033[0m\n"
+    @echo ""
+
 # Opt-in live parser integration tests (downloads/loads real spaCy + Stanza models).
 # NOT part of `ci`; gated by STYLOMETRY_LIVE_PARSER=1. The spaCy model is installed
 # into the environment after the sync, so the test run uses --no-sync to keep uv
@@ -302,6 +327,7 @@ ci-verbose:
     just code-lspchecks
     just test
     just test-coverage
+    just test-install
     just test-live-parser
     just test-live-llm
     echo ""
@@ -357,6 +383,9 @@ ci:
 
     just test-coverage > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-coverage failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Test-coverage passed\033[0m\n"
+
+    just test-install > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-install failed\033[0m\n"; cat $TMPFILE; exit 1; }
+    printf "\033[0;32m✓ Test-install passed\033[0m\n"
 
     just test-live-parser > $TMPFILE 2>&1 || { printf "\033[0;31m✗ Test-live-parser failed\033[0m\n"; cat $TMPFILE; exit 1; }
     printf "\033[0;32m✓ Test-live-parser passed\033[0m\n"

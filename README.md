@@ -2,16 +2,67 @@
 
 A Python CLI application
 
+## Installation
+
+Requires **Python 3.12+**. The package is not yet published to PyPI, so install it
+directly from the Git repository.
+
+Install the latest version with `pip`:
+
+```bash
+pip install "git+https://github.com/florianbuetow/stylometry-python-lib.git"
+```
+
+Or, using `uv`:
+
+```bash
+uv add "git+https://github.com/florianbuetow/stylometry-python-lib.git"
+```
+
+From a local checkout of this repository:
+
+```bash
+pip install .
+```
+
+The core install (numpy / pandas / scikit-learn / scipy) covers all deterministic
+features and ships the bundled lexicon data. Optional backends are provided as extras
+and can be combined — for example, to enable the spaCy syntactic features:
+
+```bash
+pip install "stylometry-python-lib[parser-spacy] @ git+https://github.com/florianbuetow/stylometry-python-lib.git"
+```
+
+| Extra | Enables |
+| --- | --- |
+| `parser-spacy` | spaCy-backed syntactic / parser features |
+| `parser-stanza` | Stanza-backed syntactic / parser features |
+| `evaluation-stats` | statsmodels evaluation (two-way ANOVA, effect sizes) |
+| `evaluation-shap` | SHAP feature-importance analysis |
+| `evaluation-plotting` | UMAP / clustering visualization |
+
+After installing, verify the import and bundled data load:
+
+```python
+from stylometry_python_lib import default_deterministic_extractor, load_lexicon
+
+load_lexicon("stopwords")  # bundled data resolves from the installed package
+```
+
+> Note: `just init` (below) is for **developing** this library, not for installing it
+> as a dependency. Use the `pip`/`uv` commands above to consume it in another project.
+
 ## Extractable Features
 
-The library can extract **90 feature families**, emitting roughly **1,500 numeric
-feature columns** plus **55 structured sidecar annotation types** for a single
-document. Features are organized into three buckets by how they are computed:
+The library can extract **90 feature families**, emitting **1,535 fixed numeric
+feature columns** (plus vocabulary-sized n-gram blocks) and **56 structured sidecar
+annotation types** for a single document. Features are organized into three buckets by
+how they are computed:
 
 | Bucket | Families | Dependencies | What it provides |
 | --- | --- | --- | --- |
 | **Deterministic** | 41 | core install (numpy / pandas / scikit-learn / scipy) | Reproducible counting/statistics over characters, words, punctuation, and layout. Runs out of the box. |
-| **Other (non-LLM)** | 29 | core, plus optional spaCy for syntax / parser-backed families | Parser-backed syntactic features and evaluation/analysis utilities. |
+| **Other (non-LLM)** | 29 | core, plus optional spaCy or Stanza for syntax / parser-backed families | Parser-backed syntactic features and evaluation/analysis utilities. |
 | **LLM** | 20 | an LLM provider (a deterministic fake provider ships for testing) | Model-judged stylistic descriptors, embeddings, and pairwise comparisons. |
 
 The fastest way to extract every deterministic feature at once is
@@ -79,10 +130,11 @@ block whose width depends on the fitted vocabulary.
 | Word unigrams | `text::word_ngram::*` | Word unigram block (*vocabulary-sized*). |
 | Word n-grams | `text::word_ngram::*` | Word n-gram block (*vocabulary-sized*). |
 
-### Syntactic / parser-backed features (require spaCy)
+### Syntactic / parser-backed features (require spaCy or Stanza)
 
-These 16 families derive from part-of-speech tags and dependency parses. They need
-the optional spaCy backend (a deterministic fake provider is used in tests).
+These 16 families derive from part-of-speech tags and dependency parses. They need an
+optional parser backend — spaCy (`parser-spacy`) or Stanza (`parser-stanza`); a
+deterministic fake provider is used in tests.
 
 | Feature family | Output columns | Description |
 | --- | --- | --- |
