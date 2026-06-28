@@ -320,7 +320,7 @@ def _llm_entry(
         family_id,
         block_id,
         output_name_pattern,
-        FeatureImplementationStatus.PARTIAL,
+        FeatureImplementationStatus.IMPLEMENTED,
         formula_or_rule,
         InputLayer.LLM,
         topic_dependence,
@@ -334,7 +334,7 @@ def _llm_entry(
         "stylometry_python_lib.features.optional; stylometry_python_lib.llm; stylometry_python_lib.llm_transformers",
         (
             "fake-provider, prompt/schema, diagnostics, configured LM Studio row/pair, embedding capability, "
-            "and recorded/replay offline tests present; live-provider credential opt-in tests pending"
+            "and recorded/replay offline tests present; live LM Studio annotation/pairwise/embedding tests present"
         ),
         "docs/RESEARCH.md#llm-based-methods",
         1,
@@ -687,15 +687,18 @@ _DETERMINISTIC_ENTRIES = (
         "lexical_density_by_lexicon",
         "lexical_density",
         "text::lexical_density::*",
-        FeatureImplementationStatus.PARTIAL,
-        "count alphabetic non-stopword tokens over total tokens",
+        FeatureImplementationStatus.IMPLEMENTED,
+        (
+            "count alphabetic non-stopword tokens over total tokens; emit overall and grouped content-lexicon density "
+            "ratios from versioned content lexicons"
+        ),
         InputLayer.TOKENS,
         TopicDependence.MIXED,
         "NaN when token denominator is zero",
-        "scalar",
+        "scalar plus versioned content-lexicon density vector",
         FeatureOutputMode.SCALAR,
-        1,
-        "aggregate golden tests present; versioned content lexicons pending",
+        6,
+        "aggregate golden tests and versioned content-lexicon density golden and metadata tests present",
         "none",
     ),
     _deterministic_entry(
@@ -750,16 +753,22 @@ _DETERMINISTIC_ENTRIES = (
         "det.person_ratios",
         "person_ratios",
         "stance_person",
-        "text::stance::{first_person_ratio,second_person_ratio,third_person_ratio}",
-        FeatureImplementationStatus.PARTIAL,
-        "count first-, second-, and third-person pronouns over total tokens",
+        (
+            "text::stance::{first_person_ratio,second_person_ratio,third_person_ratio} plus "
+            "text::stance::person={group}::{count,per_1000_tokens}"
+        ),
+        FeatureImplementationStatus.IMPLEMENTED,
+        (
+            "count first-, second-, and third-person pronouns over total tokens; emit grouped person counts and "
+            "per-1,000-token rates from the versioned pronoun lexicon"
+        ),
         InputLayer.TOKENS,
         TopicDependence.MIXED,
         "NaN when token denominator is zero",
-        "fixed scalar set",
+        "fixed scalar set plus grouped count/rate vector",
         FeatureOutputMode.SCALAR,
-        3,
-        "aggregate golden tests present; grouped metadata pending",
+        9,
+        "aggregate scalar ratio golden tests and grouped person count/rate metadata golden tests present",
         "none",
     ),
     _deterministic_entry(
